@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { PencilLine, LockOpen, Lock } from "@lucide/svelte";
+    import { getNavigationContext } from "../navigationContext";
+    import { getSelectedRuleContext } from "../selectedRuleContext";
 
 	interface Props {
-		id: number;
+		id: string;
 		name: string;
-		isActive: boolean;
-		dailyLimit: number;
+		enabled: boolean;
+		dailyLimit: number | null;
 		unlockCount: number;
 		unlockDurationMin: number | null;
 		pauseBeforeUnlockSec: number | null;
@@ -16,19 +18,22 @@
 	let {
 		id,
 		name,
-		isActive,
+		enabled,
 		dailyLimit,
 		unlockCount,
 		unlockDurationMin,
 		pauseBeforeUnlockSec,
 	}: Props = $props();
 
+	const navigate = getNavigationContext();
+	const selectedRule = getSelectedRuleContext();
+
 	let currentStep = $state<Step>("idle");
 
 	let customMinutes = $state(10);
 	let confirmationCountdown = $state(pauseBeforeUnlockSec ?? 0);
 
-	const isLocked = $derived(unlockCount >= dailyLimit);
+	const isLocked = $derived(dailyLimit ? unlockCount >= dailyLimit : false);
 	const canConfirm = $derived(confirmationCountdown <= 0);
 
 	function handleUnlockClick() {
@@ -37,7 +42,7 @@
 			return;
 		}
 
-		if (unlockDurationMin !== null) {
+		if (unlockDurationMin) {
 			currentStep = "confirming";
 		} else {
 			currentStep = "selecting_time";
@@ -58,6 +63,11 @@
 		handleCancel();
 		// TODO
 	}
+
+	function navigateToRuleForm(id: string) {
+		selectedRule.id = id;
+        navigate("rule_form");
+    }
 
 	$effect(() => {
 		let interval: number | undefined;
@@ -86,7 +96,7 @@
 <div class="bg-base-200">
 	<div class="flex justify-between items-center py-1 px-3">
 		<span class="flex gap-2">
-			{#if isActive}
+			{#if enabled}
 				<span
 					class="font-semibold
 					{isLocked ? 'text-red-600' : 'text-green-600'}"
@@ -98,11 +108,12 @@
 		</span>
 
 		<div class="flex items-center gap-2">
-			{#if isActive}
+			{#if enabled}
 				<button
 					class={isLocked ? "cursor-not-allowed" : "cursor-pointer"}
 					onclick={handleUnlockClick}
 					disabled={isLocked}
+					title="Unlock {name}"
 				>
 					{#if isLocked}
 						<Lock class="text-red-500" size={16} />
@@ -111,7 +122,7 @@
 					{/if}
 				</button>
 			{/if}
-			<button class="cursor-pointer">
+			<button class="cursor-pointer" title="Edit {name}" onclick={() => navigateToRuleForm(id)}>
 				<PencilLine class="hover:text-gray-400" size={16} />
 			</button>
 		</div>
@@ -142,9 +153,7 @@
 	{/if}
 
 	{#if currentStep === "custom_time"}
-		<div
-			class="flex items-center justify-between gap-2 bg-base-300 py-2 px-3"
-		>
+		<div class="flex items-center justify-between bg-base-300 py-2 px-3">
 			<div class="flex items-center gap-2">
 				<span>Show for</span>
 				<input
@@ -167,17 +176,15 @@
 	{/if}
 
 	{#if currentStep === "confirming"}
-		<div
-			class="flex items-center justify-between gap-2 bg-base-300 py-2 px-3"
-		>
+		<div class="flex items-center justify-between bg-base-300 py-2 px-3">
 			<span>Are you sure?</span>
 			<div class="flex items-center gap-4">
 				{#if pauseBeforeUnlockSec}
-					<span class="text-xs"
-						>{confirmationCountdown > 0
+					<span class="text-xs">
+						{confirmationCountdown > 0
 							? `${confirmationCountdown} seconds left`
-							: ""}</span
-					>
+							: ""}
+					</span>
 				{/if}
 				<div class="flex gap-2">
 					<button

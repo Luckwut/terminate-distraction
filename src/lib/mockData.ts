@@ -7,10 +7,10 @@ export const rules: Rule[] = [
         enabled: true,
         option: {
             dailyLimit: 6,
-            cooldownMin: 5,
-            unlockDurationMin: 0,
-            pauseBeforeUnlockSec: 10,
-            increasePausePerUnlockSec: 1,
+            cooldownMinute: 5,
+            unlockDurationMinute: 0,
+            pauseBeforeUnlockSecond: 10,
+            increasePausePerUnlockSecond: 1,
         },
         sites: [
             {
@@ -56,10 +56,10 @@ export const rules: Rule[] = [
         enabled: true,
         option: {
             dailyLimit: 4,
-            cooldownMin: 10,
-            unlockDurationMin: 15,
-            pauseBeforeUnlockSec: 5,
-            increasePausePerUnlockSec: 2,
+            cooldownMinute: 10,
+            unlockDurationMinute: 15,
+            pauseBeforeUnlockSecond: 5,
+            increasePausePerUnlockSecond: 2,
         },
         sites: [
             {
@@ -94,10 +94,10 @@ export const rules: Rule[] = [
         enabled: false,
         option: {
             dailyLimit: 3,
-            cooldownMin: 15,
-            unlockDurationMin: 5,
-            pauseBeforeUnlockSec: 20,
-            increasePausePerUnlockSec: 5,
+            cooldownMinute: 15,
+            unlockDurationMinute: 5,
+            pauseBeforeUnlockSecond: 20,
+            increasePausePerUnlockSecond: 5,
         },
         sites: [
             {
@@ -131,10 +131,10 @@ export const rules: Rule[] = [
         enabled: true,
         option: {
             dailyLimit: 2,
-            cooldownMin: 60,
-            unlockDurationMin: 120,
-            pauseBeforeUnlockSec: 30,
-            increasePausePerUnlockSec: 10,
+            cooldownMinute: 60,
+            unlockDurationMinute: 120,
+            pauseBeforeUnlockSecond: 30,
+            increasePausePerUnlockSecond: 10,
         },
         sites: [
             {

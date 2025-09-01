@@ -1,19 +1,16 @@
 <script lang="ts">
 	import { PencilLine, LockOpen, Lock } from "@lucide/svelte";
-    import { getNavigationContext } from "../navigationContext";
-    import { getSelectedRuleContext } from "../selectedRuleContext";
+	import { getRouterContext } from "@/lib/popup/router";
 
 	interface Props {
 		id: string;
 		name: string;
 		enabled: boolean;
-		dailyLimit: number | null;
+		dailyLimit: number;
 		unlockCount: number;
-		unlockDurationMin: number | null;
-		pauseBeforeUnlockSec: number | null;
+		unlockDurationMinute: number;
+		pauseBeforeUnlockSecond: number;
 	}
-
-	type Step = "idle" | "selecting_time" | "custom_time" | "confirming";
 
 	let {
 		id,
@@ -21,74 +18,76 @@
 		enabled,
 		dailyLimit,
 		unlockCount,
-		unlockDurationMin,
-		pauseBeforeUnlockSec,
+		unlockDurationMinute,
+		pauseBeforeUnlockSecond,
 	}: Props = $props();
 
-	const navigate = getNavigationContext();
-	const selectedRule = getSelectedRuleContext();
+	const { navigate } = getRouterContext();
 
-	let currentStep = $state<Step>("idle");
+	type UnlockStep =
+		| "idle"
+		| "selectingDuration"
+		| "customDuration"
+		| "confirming";
+	let currentStep = $state<UnlockStep>("idle");
 
-	let customMinutes = $state(10);
-	let confirmationCountdown = $state(pauseBeforeUnlockSec ?? 0);
+	let customMinutesInput = $state(10);
+	let selectedUnlockDurationMinute = $state(unlockDurationMinute);
+	let confirmationCountdown = $state(pauseBeforeUnlockSecond);
 
-	const isLocked = $derived(dailyLimit ? unlockCount >= dailyLimit : false);
+	const isLocked = $derived(dailyLimit > 0 && unlockCount >= dailyLimit);
 	const canConfirm = $derived(confirmationCountdown <= 0);
 
+	function goToEditRuleForm() {
+		navigate("ruleForm", { id });
+	}
+
+	function resetToIdle() {
+		currentStep = "idle";
+		confirmationCountdown = pauseBeforeUnlockSecond;
+	}
+
 	function handleUnlockClick() {
-		if (currentStep != "idle") {
-			handleCancel();
+		if (currentStep !== "idle") {
+			resetToIdle();
 			return;
 		}
 
-		if (unlockDurationMin) {
+		if (unlockDurationMinute > 0) {
+			selectedUnlockDurationMinute = unlockDurationMinute;
 			currentStep = "confirming";
 		} else {
-			currentStep = "selecting_time";
+			currentStep = "selectingDuration";
 		}
 	}
 
-	function handleTimeSelect() {
+	function selectDuration(minutes: number) {
+		selectedUnlockDurationMinute = minutes;
 		currentStep = "confirming";
 	}
 
-	function handleCancel() {
-		currentStep = "idle";
-		confirmationCountdown = pauseBeforeUnlockSec ?? 0;
+	function confirmUnlock() {
+		console.log(
+			`Unlocking "${name}" for ${selectedUnlockDurationMinute} minutes.`,
+		);
+		resetToIdle();
 	}
-
-	function handleConfirmYes() {
-		console.log(`Unlocked ${name}.`);
-		handleCancel();
-		// TODO
-	}
-
-	function navigateToRuleForm(id: string) {
-		selectedRule.id = id;
-        navigate("rule_form");
-    }
 
 	$effect(() => {
-		let interval: number | undefined;
+		if (currentStep !== "confirming" || pauseBeforeUnlockSecond <= 0) {
+			return;
+		}
 
-		if (
-			currentStep === "confirming" &&
-			pauseBeforeUnlockSec &&
-			pauseBeforeUnlockSec > 0
-		) {
-			interval = window.setInterval(() => {
-				confirmationCountdown -= 1;
-				if (confirmationCountdown <= 0) {
-					window.clearInterval(interval);
-				}
-			}, 1000);
+		const interval = setInterval(() => {
+			confirmationCountdown -= 1;
+		}, 1000);
+
+		if (confirmationCountdown <= 0) {
+			clearInterval(interval);
 		}
 
 		return () => {
-			if (interval) {
-				window.clearInterval(interval);
-			}
+			clearInterval(interval);
 		};
 	});
 </script>
@@ -104,7 +103,7 @@
 					{unlockCount}/{dailyLimit}
 				</span>
 			{/if}
-			<span>{name}</span>
+			<span class="truncate w-48" title={name}>{name}</span>
 		</span>
 
 		<div class="flex items-center gap-2">
@@ -122,55 +121,72 @@
 					{/if}
 				</button>
 			{/if}
-			<button class="cursor-pointer" title="Edit {name}" onclick={() => navigateToRuleForm(id)}>
+			<button
+				class="cursor-pointer"
+				title="Edit {name}"
+				onclick={goToEditRuleForm}
+			>
 				<PencilLine class="hover:text-gray-400" size={16} />
 			</button>
 		</div>
 	</div>
 
-	{#if currentStep === "selecting_time"}
+	{#if currentStep === "selectingDuration"}
 		<div class="flex items-center gap-2 bg-base-300 py-2 px-3">
-			<span>Show for</span>
+			<span>Unlock for</span>
 			<button
 				class="btn btn-xs btn-soft hover:btn-warning"
-				onclick={handleTimeSelect}>5 min</button
+				onclick={() => selectDuration(5)}
 			>
+				5 min
+			</button>
 			<button
 				class="btn btn-xs btn-soft hover:btn-warning"
-				onclick={handleTimeSelect}>10 min</button
+				onclick={() => selectDuration(10)}
 			>
+				10 min
+			</button>
 			<button
 				class="btn btn-xs btn-soft hover:btn-warning"
-				onclick={handleTimeSelect}>15 min</button
+				onclick={() => selectDuration(15)}
 			>
+				15 min
+			</button>
 			<button
 				class="btn btn-xs btn-soft hover:btn-error"
-				onclick={() => (currentStep = "custom_time")}
+				onclick={() => (currentStep = "customDuration")}
 			>
 				Custom
 			</button>
 		</div>
 	{/if}
 
-	{#if currentStep === "custom_time"}
+	{#if currentStep === "customDuration"}
 		<div class="flex items-center justify-between bg-base-300 py-2 px-3">
 			<div class="flex items-center gap-2">
-				<span>Show for</span>
+				<span>Unlock for</span>
 				<input
 					type="number"
 					class="input input-sm w-16"
-					bind:value={customMinutes}
+					placeholder="Minutes"
+					min="1"
+					bind:value={customMinutesInput}
 				/>
 				<span>min</span>
 			</div>
 			<div>
-				<button class="btn btn-xs btn-soft" onclick={handleCancel}
-					>Cancel</button
+				<button
+					class="btn btn-xs btn-soft hover:btn-primary"
+					onclick={resetToIdle}
 				>
+					Cancel
+				</button>
 				<button
 					class="btn btn-xs btn-soft btn-error"
-					onclick={handleTimeSelect}>Confirm</button
+					onclick={() => selectDuration(customMinutesInput)}
 				>
+					Confirm
+				</button>
 			</div>
 		</div>
 	{/if}
@@ -179,22 +195,22 @@
 		<div class="flex items-center justify-between bg-base-300 py-2 px-3">
 			<span>Are you sure?</span>
 			<div class="flex items-center gap-4">
-				{#if pauseBeforeUnlockSec}
-					<span class="text-xs">
-						{confirmationCountdown > 0
-							? `${confirmationCountdown} seconds left`
-							: ""}
+				{#if pauseBeforeUnlockSecond > 0 && confirmationCountdown > 0}
+					<span class="text-xs tabular-nums">
+						Wait {confirmationCountdown}s
 					</span>
 				{/if}
 				<div class="flex gap-2">
 					<button
 						class="btn btn-xs btn-soft btn-primary"
-						onclick={handleCancel}>No</button
+						onclick={resetToIdle}
 					>
+						No
+					</button>
 					<button
-						class="btn btn-xs btn-soft btn-error"
+						class="btn btn-xs btn-error"
 						disabled={!canConfirm}
-						onclick={handleConfirmYes}
+						onclick={confirmUnlock}
 					>
 						Yes
 					</button>

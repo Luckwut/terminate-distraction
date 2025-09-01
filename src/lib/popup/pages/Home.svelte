@@ -1,10 +1,10 @@
 <script lang="ts">
     import { ChevronDown, Plus } from "@lucide/svelte";
     import RuleItem from "@/lib/popup/components/RuleItem.svelte";
-    import { rules } from "@/lib/data";
-    import { getNavigationContext } from "../navigationContext";
+    import { rules } from "@/lib/mockData";
+    import { getRouterContext } from "@/lib/popup/router";
 
-    const navigate = getNavigationContext();
+    const { navigate } = getRouterContext();
 
     let isActiveCollapsed = $state(false);
     const activeChevronClass = $derived(isActiveCollapsed ? "" : "rotate-180");
@@ -17,12 +17,9 @@
     const activeRules = $derived(rules.filter((r) => r.enabled));
     const disabledRules = $derived(rules.filter((r) => !r.enabled));
 
-    function navigateToRuleForm(
-        e: MouseEvent | KeyboardEvent,
-        id: string | null = null,
-    ) {
-        e.stopPropagation();
-        navigate("rule_form");
+    function goToAddRuleForm(e: MouseEvent | KeyboardEvent) {
+        e.stopPropagation(); // TODO: Explanation
+        navigate("ruleForm");
     }
 </script>
 
@@ -41,8 +38,8 @@
         <div class="flex gap-2">
             <button
                 class="cursor-pointer"
-                onclick={navigateToRuleForm}
-                onkeydown={navigateToRuleForm}
+                onclick={goToAddRuleForm}
+                onkeydown={goToAddRuleForm}
                 title="Add New Rule"
             >
                 <Plus size={20} class="hover:text-gray-400" />
@@ -63,9 +60,9 @@
                         name={rule.name}
                         enabled={rule.enabled}
                         dailyLimit={rule.option.dailyLimit}
-                        unlockCount={Math.floor(Math.random() * (2 - 1 + 1)) + 1}
-                        unlockDurationMin={rule.option.unlockDurationMin}
-                        pauseBeforeUnlockSec={rule.option.pauseBeforeUnlockSec}
+                        unlockCount={0}
+                        unlockDurationMinute={rule.option.unlockDurationMinute}
+                        pauseBeforeUnlockSecond={rule.option.pauseBeforeUnlockSecond}
                     />
                 {/each}
             </div>
@@ -101,8 +98,8 @@
                         enabled={rule.enabled}
                         dailyLimit={rule.option.dailyLimit}
                         unlockCount={0}
-                        unlockDurationMin={rule.option.unlockDurationMin}
-                        pauseBeforeUnlockSec={rule.option.pauseBeforeUnlockSec}
+                        unlockDurationMinute={rule.option.unlockDurationMinute}
+                        pauseBeforeUnlockSecond={rule.option.pauseBeforeUnlockSecond}
                     />
                 {/each}
             </div>

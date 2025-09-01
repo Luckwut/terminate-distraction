@@ -16,11 +16,11 @@ export interface Rule {
     name: string;
     enabled: boolean;
     option: {
-        dailyLimit: number | null;
-        cooldownMin: number | null;
-        unlockDurationMin: number | null;
-        pauseBeforeUnlockSec: number | null;
-        increasePausePerUnlockSec: number | null;
+        dailyLimit: number;
+        cooldownMinute: number;
+        unlockDurationMinute: number;
+        pauseBeforeUnlockSecond: number;
+        increasePausePerUnlockSecond: number;
     };
     sites: Site[];
 }

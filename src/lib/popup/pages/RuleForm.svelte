@@ -1,11 +1,44 @@
 <script lang="ts">
     import { ArrowLeft, ChevronDown, CirclePlus } from "@lucide/svelte";
-    import SiteActionItem from "../components/SiteActionItem.svelte";
-    import { getNavigationContext } from "../navigationContext";
-    import { rules } from "@/lib/data";
-    import { getSelectedRuleContext } from "../selectedRuleContext";
+    import SiteActionItem from "@/lib/popup/components/SiteActionItem.svelte";
+    import { getRouterContext } from "@/lib/popup/router";
+    import { rules } from "@/lib/mockData";
+    import { type Rule } from "@/lib/types";
 
-    const navigate = getNavigationContext();
+    interface Props {
+        id?: string | null;
+    }
+
+    let { id = null }: Props = $props();
+
+    const { navigate } = getRouterContext();
+
+    function getInitialFormState(): Rule {
+        if (id) {
+            const rule = rules.find((r) => r.id === id);
+            if (rule) {
+                return structuredClone(rule);
+            }
+        }
+
+        return {
+            id: crypto.randomUUID(),
+            name: "",
+            enabled: true,
+            option: {
+                dailyLimit: 0,
+                cooldownMinute: 0,
+                unlockDurationMinute: 0,
+                pauseBeforeUnlockSecond: 0,
+                increasePausePerUnlockSecond: 0,
+            },
+            sites: [],
+        };
+    }
+
+    let form = $state(getInitialFormState());
+
+    const isEditMode = $derived(id !== null);
 
     let isGeneralCollapsed = $state(false);
     const generalChevronClass = $derived(
@@ -18,34 +51,12 @@
     let isActionCollapsed = $state(false);
     const actionChevronClass = $derived(isActionCollapsed ? "" : "rotate-180");
 
-    const selectedRule = getSelectedRuleContext();
-    const isNewRule = selectedRule.id === null;
-    console.log(isNewRule);
-    const { name, enabled, option, sites } = rules.find(r => r.id === selectedRule.id && !isNewRule) || {};
+    function handleSubmit() {
+        // TODO
+        navigate("home");
+    }
 
-    let toggleActivate = $state(enabled || true);
-    let nameInput = $state(name);
-
-    const {
-        dailyLimit,
-        cooldownMin,
-        unlockDurationMin,
-        pauseBeforeUnlockSec,
-        increasePausePerUnlockSec
-    } = option || {
-        dailyLimit: null,
-        cooldownMin: null,
-        unlockDurationMin: null,
-        pauseBeforeUnlockSec: null,
-        increasePausePerUnlockSec: null
-    };
-    let dailyLimitInput = $state(dailyLimit);
-    let cooldownMinInput = $state(cooldownMin);
-    let unlockDurationMinInput = $state(unlockDurationMin);
-    let pauseBeforeUnlockSecInput = $state(pauseBeforeUnlockSec);
-    let increasePausePerUnlockSecInput = $state(increasePausePerUnlockSec);
-
-    function navigateToHome(e: MouseEvent | KeyboardEvent) {
+    function goToEditHomeForm(e: MouseEvent | KeyboardEvent) {
         e.stopPropagation();
         navigate("home");
     }
@@ -55,13 +66,13 @@
     <div class="flex gap-2 items-center p-2">
         <button
             class="cursor-pointer"
-            onclick={navigateToHome}
-            onkeydown={navigateToHome}
+            onclick={goToEditHomeForm}
+            onkeydown={goToEditHomeForm}
             title="Return to Home"
         >
             <ArrowLeft size={20} class="hover:text-gray-400" />
         </button>
-        <span>{isNewRule ? "Add New Rule" : "Edit Rule"}</span>
+        <span>{isEditMode ? "Edit Rule" : "Add New Rule"}</span>
     </div>
 </section>
 
@@ -88,20 +99,24 @@
                 class="flex items-center justify-between bg-base-200 py-2 px-3"
             >
                 <span>Rule Name</span>
-                <input type="text" class="input input-sm w-52" bind:value={nameInput} />
+                <input
+                    type="text"
+                    class="input input-sm w-52"
+                    bind:value={form.name}
+                />
             </div>
             <div
                 class="flex items-center justify-between bg-base-200 py-2 px-3"
             >
                 <span>Rule Enabled</span>
                 <div class="flex items-center gap-2">
-                    <span class="text-xs {toggleActivate ? '' : 'opacity-35'}">
-                        {toggleActivate ? "Active" : "Disabled"}
+                    <span class="text-xs {form.enabled ? '' : 'opacity-35'}">
+                        {form.enabled ? "Active" : "Disabled"}
                     </span>
                     <input
                         type="checkbox"
                         class="toggle toggle-primary checked:bg-primary checked:text-primary-content"
-                        bind:checked={toggleActivate}
+                        bind:checked={form.enabled}
                     />
                 </div>
             </div>
@@ -145,7 +160,11 @@
             >
                 <span>Daily limit</span>
                 <div class="flex items-center mr-2">
-                    <input type="number" class="input input-xs w-16" bind:value={dailyLimitInput} />
+                    <input
+                        type="number"
+                        class="input input-xs w-16"
+                        bind:value={form.option.dailyLimit}
+                    />
                     <span class="inline-block w-14 text-right">unlock</span>
                 </div>
             </div>
@@ -155,7 +174,11 @@
             >
                 <span>Unlock duration</span>
                 <div class="flex items-center mr-2">
-                    <input type="number" class="input input-xs w-16" bind:value={cooldownMinInput} />
+                    <input
+                        type="number"
+                        class="input input-xs w-16"
+                        bind:value={form.option.cooldownMinute}
+                    />
                     <span class="inline-block w-14 text-right">minute</span>
                 </div>
             </div>
@@ -165,7 +188,11 @@
             >
                 <span>Cooldown between unlock</span>
                 <div class="flex items-center mr-2">
-                    <input type="number" class="input input-xs w-16" bind:value={unlockDurationMinInput} />
+                    <input
+                        type="number"
+                        class="input input-xs w-16"
+                        bind:value={form.option.unlockDurationMinute}
+                    />
                     <span class="inline-block w-14 text-right">minute</span>
                 </div>
             </div>
@@ -175,7 +202,11 @@
             >
                 <span>Pause before unlock</span>
                 <div class="flex items-center mr-2">
-                    <input type="number" class="input input-xs w-16" bind:value={pauseBeforeUnlockSecInput} />
+                    <input
+                        type="number"
+                        class="input input-xs w-16"
+                        bind:value={form.option.pauseBeforeUnlockSecond}
+                    />
                     <span class="inline-block w-14 text-right">second</span>
                 </div>
             </div>
@@ -185,7 +216,11 @@
             >
                 <span>Increase pause time per unlock</span>
                 <div class="flex items-center mr-2">
-                    <input type="number" class="input input-xs w-16" bind:value={increasePausePerUnlockSecInput} />
+                    <input
+                        type="number"
+                        class="input input-xs w-16"
+                        bind:value={form.option.increasePausePerUnlockSecond}
+                    />
                     <span class="inline-block w-14 text-right">second</span>
                 </div>
             </div>
@@ -228,8 +263,8 @@
             </div>
         </div>
 
-        {#if sites}
-            {#each sites as site (site.id)}
+        {#if form.sites}
+            {#each form.sites as site (site.id)}
                 <SiteActionItem siteUrl={site.siteUrl} actions={site.actions} />
             {/each}
         {/if}

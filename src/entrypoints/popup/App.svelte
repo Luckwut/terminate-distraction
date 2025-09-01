@@ -1,24 +1,33 @@
 <script lang="ts">
   import Header from "@/lib/popup/components/Header.svelte";
-  import { type Page, setNavigationContext } from "@/lib/popup/navigationContext";
   import Home from "@/lib/popup/pages/Home.svelte";
   import RuleForm from "@/lib/popup/pages/RuleForm.svelte";
-    import { setSelectedRuleContext } from "@/lib/popup/selectedRuleContext";
+  import {
+    type Page,
+    type Route,
+    type RouteParams,
+    setRouterContext,
+  } from "@/lib/popup/router";
 
-  let currentPage = $state<Page>("home");
-  const navigate = (page: Page) => (currentPage = page);
-  setNavigationContext(navigate);
+  let currentRoute = $state<Route>({ name: "home", params: {} });
 
-  let selectedRule = $state<{ id: string | null }>({ id: null });
-  setSelectedRuleContext(selectedRule);
+  const navigate = (name: Page, params: RouteParams = {}) => {
+    currentRoute.name = name;
+    currentRoute.params = params;
+  };
+
+  setRouterContext({
+    route: currentRoute,
+    navigate: navigate,
+  });
 </script>
 
 <main class="w-96 flex flex-col text-sm">
   <Header />
 
-  {#if currentPage === "home"}
+  {#if currentRoute.name === "home"}
     <Home />
-  {:else}
-    <RuleForm />
+  {:else if currentRoute.name === "ruleForm"}
+    <RuleForm id={currentRoute.params.id } />
   {/if}
 </main>

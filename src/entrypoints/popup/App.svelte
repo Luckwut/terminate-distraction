@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { initMockData } from "@/lib/mockData";
   import Header from "@/lib/popup/components/Header.svelte";
   import Home from "@/lib/popup/pages/Home.svelte";
   import RuleForm from "@/lib/popup/pages/RuleForm.svelte";
@@ -20,6 +21,11 @@
     route: currentRoute,
     navigate: navigate,
   });
+
+  // Temporary: Initialize mock data for testing purposes
+  onMount(async () => {
+    await initMockData();
+  });
 </script>
 
 <main class="w-96 flex flex-col text-sm">
@@ -28,6 +34,6 @@
   {#if currentRoute.name === "home"}
     <Home />
   {:else if currentRoute.name === "ruleForm"}
-    <RuleForm id={currentRoute.params.id } />
+    <RuleForm id={currentRoute.params.id} />
   {/if}
 </main>

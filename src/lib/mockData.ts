@@ -1,6 +1,7 @@
 import { Rule } from "@/lib/types";
+import { getRuleStorage, setRuleStorage } from "./storage";
 
-export const rules: Rule[] = [
+const mockRules: Rule[] = [
     {
         id: crypto.randomUUID(),
         name: "YouTube",
@@ -34,7 +35,13 @@ export const rules: Rule[] = [
                         type: "HIDE_ELEMENT",
                         label: "Youtube Video Related Feed",
                         selector: "#video-feed"
-                    }
+                    },
+                    {
+                        id: crypto.randomUUID(),
+                        type: "HIDE_ELEMENT",
+                        label: "Youtube Video Comment",
+                        selector: "#video-feed"
+                    },
                 ]
             },
             {
@@ -164,3 +171,10 @@ export const rules: Rule[] = [
         ]
     },
 ];
+
+export async function initMockData() {
+    const existing = await getRuleStorage();
+    if (!existing || existing.length === 0) {
+        await setRuleStorage(mockRules);
+    }
+}

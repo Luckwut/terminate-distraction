@@ -1,9 +1,9 @@
 <script lang="ts">
-    import { ArrowLeft, ChevronDown, CirclePlus } from "@lucide/svelte";
+    import { ArrowLeft, ChevronDown } from "@lucide/svelte";
     import SiteActionItem from "@/lib/popup/components/SiteActionItem.svelte";
     import { getRouterContext } from "@/lib/popup/router";
-    import { rules } from "@/lib/mockData";
-    import { type Rule } from "@/lib/types";
+    import type { Rule } from "@/lib/types";
+    import { getRuleStorage } from "@/lib/storage";
 
     interface Props {
         id?: string | null;
@@ -13,7 +13,19 @@
 
     const { navigate } = getRouterContext();
 
+    let rules = $state<Rule[]>([]);
+
+    $effect(() => {
+        getRuleStorage().then((data) => {
+            rules = data ?? [];
+        });
+    });
+
+    $inspect(rules);
+
     function getInitialFormState(): Rule {
+        console.log(`Are rules empty? ${rules.length}`);
+
         if (id) {
             const rule = rules.find((r) => r.id === id);
             if (rule) {

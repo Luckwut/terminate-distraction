@@ -1,10 +1,22 @@
 <script lang="ts">
     import { ChevronDown, Plus } from "@lucide/svelte";
     import RuleItem from "@/lib/popup/components/RuleItem.svelte";
-    import { rules } from "@/lib/mockData";
     import { getRouterContext } from "@/lib/popup/router";
+    import { getRuleStorage } from "@/lib/storage";
+    import type { Rule } from "@/lib/types";
 
     const { navigate } = getRouterContext();
+
+    let rules = $state<Rule[]>([]);
+
+    $effect(() => {
+        getRuleStorage().then((data) => {
+            rules = data ?? [];
+        });
+    });
+
+    const activeRules = $derived(rules.filter((r) => r.enabled));
+    const disabledRules = $derived(rules.filter((r) => !r.enabled));
 
     let isActiveCollapsed = $state(false);
     const activeChevronClass = $derived(isActiveCollapsed ? "" : "rotate-180");
@@ -14,11 +26,8 @@
         isDisabledCollapsed ? "" : "rotate-180",
     );
 
-    const activeRules = $derived(rules.filter((r) => r.enabled));
-    const disabledRules = $derived(rules.filter((r) => !r.enabled));
-
     function goToAddRuleForm(e: MouseEvent | KeyboardEvent) {
-        e.stopPropagation(); // TODO: Explanation
+        e.stopPropagation();
         navigate("ruleForm");
     }
 </script>
@@ -62,7 +71,8 @@
                         dailyLimit={rule.option.dailyLimit}
                         unlockCount={0}
                         unlockDurationMinute={rule.option.unlockDurationMinute}
-                        pauseBeforeUnlockSecond={rule.option.pauseBeforeUnlockSecond}
+                        pauseBeforeUnlockSecond={rule.option
+                            .pauseBeforeUnlockSecond}
                     />
                 {/each}
             </div>
@@ -99,7 +109,8 @@
                         dailyLimit={rule.option.dailyLimit}
                         unlockCount={0}
                         unlockDurationMinute={rule.option.unlockDurationMinute}
-                        pauseBeforeUnlockSecond={rule.option.pauseBeforeUnlockSecond}
+                        pauseBeforeUnlockSecond={rule.option
+                            .pauseBeforeUnlockSecond}
                     />
                 {/each}
             </div>

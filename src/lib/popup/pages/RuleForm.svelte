@@ -263,7 +263,7 @@
                 (e.key === "Enter" || e.key === " ") &&
                 (isActionCollapsed = !isActionCollapsed)}
         >
-            <span>Action</span>
+            <span>Sites</span>
 
             <ChevronDown
                 size={20}

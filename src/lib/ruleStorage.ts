@@ -1,4 +1,5 @@
 import type { Rule } from "@/lib/types";
+import { ruleMock } from "@/lib/ruleMock"; // TEMPORARY
 
 const RULES_STORAGE_KEY = "local:rules";
 
@@ -8,4 +9,11 @@ export async function setRuleStorage(rules: Rule[]) {
 
 export async function getRuleStorage(): Promise<Rule[] | null> {
     return await storage.getItem(RULES_STORAGE_KEY) as Rule[] | null;
+}
+
+export async function initMockData() {
+    const existing = await getRuleStorage();
+    if (!existing || existing.length === 0) {
+        await setRuleStorage(ruleMock);
+    }
 }

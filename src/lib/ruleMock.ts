@@ -1,7 +1,6 @@
 import { Rule } from "@/lib/types";
-import { getRuleStorage, setRuleStorage } from "./storage";
 
-const mockRules: Rule[] = [
+export const ruleMock: Rule[] = [
     {
         id: crypto.randomUUID(),
         name: "YouTube",
@@ -171,10 +170,3 @@ const mockRules: Rule[] = [
         ]
     },
 ];
-
-export async function initMockData() {
-    const existing = await getRuleStorage();
-    if (!existing || existing.length === 0) {
-        await setRuleStorage(mockRules);
-    }
-}

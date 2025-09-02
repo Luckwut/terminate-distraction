@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { initMockData } from "@/lib/mockData";
   import Header from "@/lib/popup/components/Header.svelte";
   import Home from "@/lib/popup/pages/Home.svelte";
   import RuleForm from "@/lib/popup/pages/RuleForm.svelte";
@@ -20,11 +19,6 @@
   setRouterContext({
     route: currentRoute,
     navigate: navigate,
-  });
-
-  // Temporary: Initialize mock data for testing purposes
-  onMount(async () => {
-    await initMockData();
   });
 </script>
 

@@ -1,6 +1,6 @@
 import { Rule } from "@/lib/types";
 
-export const ruleMock: Rule[] = [
+export const ruleMockData: Rule[] = [
     {
         id: crypto.randomUUID(),
         name: "YouTube",

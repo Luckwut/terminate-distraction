@@ -4,7 +4,6 @@ import { getRuleStorage, initMockData, setRuleStorage } from "@/lib/ruleStorage"
 let data = $state<Rule[] | null>(null);
 
 // Tracks ongoing load to avoid duplicates (only one load at a time)
-// Akin to a 'Singleton' pattern (?), but for waiting Async
 let loader: Promise<void> | null = null;
 
 export const rulesStore = {

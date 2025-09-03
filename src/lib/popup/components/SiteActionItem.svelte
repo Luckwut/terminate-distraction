@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { Action } from "@/lib/types";
+    import type { Action, Site } from "@/lib/types";
     import {
         ChevronDown,
         Ellipsis,
@@ -8,19 +8,14 @@
     } from "@lucide/svelte";
 
     interface Props {
-        siteUrl: string;
-        actions: Array<Action>;
+        site: Site;
+        handleDeleteSite: (siteId: string) => void;
     }
 
-    let { siteUrl, actions }: Props = $props();
+    let { site, handleDeleteSite }: Props = $props();
 
     let isDropdownCollapsed = $state(true);
     const chevronClass = $derived(isDropdownCollapsed ? "" : "rotate-180");
-
-    let dialogElement: HTMLDialogElement | undefined;
-    $effect(() => {
-        // dialogElement?.showModal();
-    });
 </script>
 
 <section>
@@ -33,7 +28,7 @@
             (e.key === "Enter" || e.key === " ") &&
             (isDropdownCollapsed = !isDropdownCollapsed)}
     >
-        <span class="font-mono">{siteUrl}</span>
+        <span class="font-mono">{site.siteUrl}</span>
 
         <div class="flex items-center gap-2">
             <div class="dropdown dropdown-hover dropdown-top dropdown-end">
@@ -55,7 +50,7 @@
                         <button>Block Site</button>
                     </li>
                     <li>
-                        <button class="text-error">Delete</button>
+                        <button class="text-error" onclick={() => handleDeleteSite(site.id)}>Delete</button>
                     </li>
                 </ul>
             </div>
@@ -68,7 +63,7 @@
     </div>
 
     {#if !isDropdownCollapsed}
-        {#each actions as action (action.id)}
+        {#each site.actions as action (action.id)}
             <div
                 class="flex items-center justify-between bg-base-300 pb-2 pt-1 px-3"
             >
@@ -85,22 +80,4 @@
             </div>
         {/each}
     {/if}
-
-    <!-- Delete Modal -->
-    <dialog class="modal" bind:this={dialogElement}>
-        <div class="modal-box p-4 w-70">
-            <h3 class="text-lg font-bold">Are you sure?</h3>
-            <p class="mt-2">Delete "Block Reels" action</p>
-            <div class="modal-action flex">
-                <form method="dialog" class="flex-1">
-                    <button class="btn btn-sm btn-soft w-full">Close</button>
-                </form>
-                <div class="flex-1">
-                    <button class="btn btn-sm btn-soft btn-error w-full">
-                        Confirm
-                    </button>
-                </div>
-            </div>
-        </div>
-    </dialog>
 </section>

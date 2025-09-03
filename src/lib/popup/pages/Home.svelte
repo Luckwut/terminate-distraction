@@ -21,6 +21,9 @@
     );
 
     function goToAddRuleForm(e: MouseEvent | KeyboardEvent) {
+        // Only trigger for Enter or Space keys (keyboard) or mouse clicks
+        if (e instanceof KeyboardEvent && e.key !== "Enter" && e.key !== " ") return;
+
         e.stopPropagation();
         navigate("ruleForm");
     }

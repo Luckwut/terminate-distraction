@@ -1,8 +1,13 @@
 <script lang="ts">
-    import { ArrowLeft, ChevronDown } from "@lucide/svelte";
+    import {
+        ArrowLeft,
+        ChevronDown,
+        CircleAlert,
+        CircleQuestionMark,
+    } from "@lucide/svelte";
     import SiteActionItem from "@/lib/popup/components/SiteActionItem.svelte";
     import { getRouterContext } from "@/lib/popup/router";
-    import type { Rule } from "@/lib/types";
+    import type { Rule, Site } from "@/lib/types";
     import { rulesStore } from "@/lib/ruleStore.svelte";
 
     interface Props {
@@ -26,13 +31,8 @@
         if (id) {
             const ruleToEdit = rules.find((r) => r.id === id);
             if (ruleToEdit) {
-                initialFormState = {
-                    id: ruleToEdit.id,
-                    name: ruleToEdit.name,
-                    enabled: ruleToEdit.enabled,
-                    option: ruleToEdit.option,
-                    sites: ruleToEdit.sites,
-                };
+                const raw = $state.snapshot(ruleToEdit);
+                initialFormState = structuredClone(raw);
             } else {
                 // TODO: Better error handling?
                 console.error(`Rule with id ${id} not found!`);
@@ -58,6 +58,8 @@
         form = initialFormState;
     });
 
+    let addSiteInput = $state("");
+
     const isEditMode = $derived(id !== null);
 
     let isGeneralCollapsed = $state(false);
@@ -71,24 +73,80 @@
     let isSiteCollapsed = $state(false);
     const siteChevronClass = $derived(isSiteCollapsed ? "" : "rotate-180");
 
-    // let buttonSectionBgColor = $state<
-    //     "bg-base-100" | "bg-base-200" | "bg-base-300"
-    // >("bg-base-100");
-
-    let buttonSectionBgColor = $derived.by(() => {
+    let buttonSectionBgColorClass = $derived.by(() => {
         if (!isSiteCollapsed && form?.sites.length !== 0) {
-            return "bg-base-300"
+            return "bg-base-300";
         }
 
         return isSiteCollapsed ? "bg-base-100" : "bg-base-200";
     });
 
+    function hanldeAddSite(e: SubmitEvent) {
+        e.preventDefault();
+
+        if (!form) return;
+        if (!addSiteInput.trim()) return;
+
+        // PLACEHOLDER: Only block page for MVP!
+        const site: Site = {
+            id: crypto.randomUUID(),
+            siteUrl: addSiteInput.trim(),
+            actions: [
+                {
+                    id: crypto.randomUUID(),
+                    type: "BLOCK_PAGE",
+                    label: `${form?.name} BLOCK`,
+                },
+            ],
+        };
+
+        form?.sites.push(site);
+        addSiteInput = "";
+    }
+
+    function handleDeleteSite(siteId: string) {
+        if (!form) return;
+        form.sites = form.sites.filter((s) => s.id !== siteId);
+    }
+
     function handleSubmit() {
-        // TODO: Add new rule data into storage
+        if (!form) return;
+        const rules = rulesStore.rules;
+        if (rules === null) return;
+
+        // TODO: Name cannot be empty hint?
+        if (!form.name.trim()) return;
+        form.name = form.name.trim();
+
+        // Normalize blank option inputs to 0
+        for (const key in form.option) {
+            const optionKey = key as keyof Rule["option"];
+            form.option[optionKey] = Number(form.option[optionKey]) || 0;
+        }
+
+        const updatedRules = isEditMode
+            ? rules.map((r) => (r.id === id ? form! : r))
+            : [...rules, form];
+
+        rulesStore.update(updatedRules);
+        navigate("home");
+    }
+
+    function handleDeleteRule() {
+        if (!id) return;
+        const rules = rulesStore.rules;
+        if (rules === null) return;
+
+        // TODO: Add confirmation
+        const updatedRules = rules.filter((r) => r.id !== id);
+        rulesStore.update(updatedRules);
         navigate("home");
     }
 
     function goToEditHomeForm(e: MouseEvent | KeyboardEvent) {
+        if (e instanceof KeyboardEvent && e.key !== "Enter" && e.key !== " ")
+            return;
+
         e.stopPropagation();
         navigate("home");
     }
@@ -135,6 +193,7 @@
                     <input
                         type="text"
                         class="input input-sm w-52"
+                        placeholder="Name cannot be empty!"
                         bind:value={form.name}
                     />
                 </div>
@@ -155,14 +214,19 @@
                         />
                     </div>
                 </div>
-                <div
-                    class="flex items-center justify-between bg-base-200 py-2 px-3"
-                >
-                    <span>Delete Rule</span>
-                    <button class="btn btn-error btn-soft btn-sm w-32">
-                        Delete
-                    </button>
-                </div>
+                {#if isEditMode}
+                    <div
+                        class="flex items-center justify-between bg-base-200 py-2 px-3"
+                    >
+                        <span>Delete Rule</span>
+                        <button
+                            class="btn btn-error btn-soft btn-sm w-32"
+                            onclick={handleDeleteRule}
+                        >
+                            Delete
+                        </button>
+                    </div>
+                {/if}
             </div>
         {/if}
     </section>
@@ -177,7 +241,7 @@
                 (e.key === "Enter" || e.key === " ") &&
                 (isOptionCollapsed = !isOptionCollapsed)}
         >
-            <span>Option</span>
+            <span>Additional Options</span>
 
             <div class="flex items-center gap-2">
                 <span class="text-xs opacity-35">Optional</span>
@@ -193,11 +257,31 @@
                 <div
                     class="flex items-center justify-between bg-base-200 pb-1 pt-2 px-3"
                 >
-                    <span>Daily limit</span>
+                    <div class="flex items-center gap-2">
+                        <span>Daily limit</span>
+                        <div class="tooltip">
+                            <div
+                                class="tooltip-content translate-x-24 text-left"
+                            >
+                                <span class="text-xs font-mono">
+                                    Hard daily limit for unlock
+                                    attempts.Example: if set to 6, after 6
+                                    unlocks, the rule cannot be unlocked again
+                                    that day.
+                                </span>
+                            </div>
+                            <CircleQuestionMark
+                                size={12}
+                                class="text-gray-600 cursor-pointer"
+                            />
+                        </div>
+                    </div>
+
                     <div class="flex items-center mr-2">
                         <input
                             type="number"
                             class="input input-xs w-16"
+                            min="0"
                             bind:value={form.option.dailyLimit}
                         />
                         <span class="inline-block w-14 text-right">unlock</span>
@@ -207,25 +291,30 @@
                 <div
                     class="flex items-center justify-between bg-base-200 py-1 px-3"
                 >
-                    <span>Unlock duration</span>
-                    <div class="flex items-center mr-2">
-                        <input
-                            type="number"
-                            class="input input-xs w-16"
-                            bind:value={form.option.cooldownMinute}
-                        />
-                        <span class="inline-block w-14 text-right">minute</span>
+                    <div class="flex items-center gap-2">
+                        <span>Unlock Duration</span>
+                        <div class="tooltip">
+                            <div
+                                class="tooltip-content translate-x-12 text-left"
+                            >
+                                <span class="text-xs font-mono">
+                                    How long the site stays unlocked. If blank
+                                    or 0, the user will be prompted to choose a
+                                    duration during unlock.
+                                </span>
+                            </div>
+                            <CircleQuestionMark
+                                size={12}
+                                class="text-gray-600 cursor-pointer"
+                            />
+                        </div>
                     </div>
-                </div>
 
-                <div
-                    class="flex items-center justify-between bg-base-200 py-1 px-3"
-                >
-                    <span>Cooldown between unlock</span>
                     <div class="flex items-center mr-2">
                         <input
                             type="number"
                             class="input input-xs w-16"
+                            min="0"
                             bind:value={form.option.unlockDurationMinute}
                         />
                         <span class="inline-block w-14 text-right">minute</span>
@@ -235,11 +324,61 @@
                 <div
                     class="flex items-center justify-between bg-base-200 py-1 px-3"
                 >
-                    <span>Pause before unlock</span>
+                    <div class="flex items-center gap-2">
+                        <span>Cooldown between unlock</span>
+                        <div class="tooltip">
+                            <div class="tooltip-content">
+                                <span class="text-xs font-mono">
+                                    The waiting time before the site can be
+                                    unlocked again after it becomes locked.
+                                </span>
+                            </div>
+                            <CircleQuestionMark
+                                size={12}
+                                class="text-gray-600 cursor-pointer"
+                            />
+                        </div>
+                    </div>
+
                     <div class="flex items-center mr-2">
                         <input
                             type="number"
                             class="input input-xs w-16"
+                            min="0"
+                            bind:value={form.option.cooldownMinute}
+                        />
+                        <span class="inline-block w-14 text-right">minute</span>
+                    </div>
+                </div>
+
+                <div
+                    class="flex items-center justify-between bg-base-200 py-1 px-3"
+                >
+                    <div class="flex items-center gap-2">
+                        <span>Pause before unlock</span>
+                        <div class="tooltip">
+                            <div
+                                class="tooltip-content translate-x-8 text-left"
+                            >
+                                <span class="text-xs font-mono">
+                                    Delay before confirming unlock in the 'Are
+                                    you sure?' prompt. The Yes button stays
+                                    disabled until the countdown ends. Set to 0
+                                    for no delay.
+                                </span>
+                            </div>
+                            <CircleQuestionMark
+                                size={12}
+                                class="text-gray-600 cursor-pointer"
+                            />
+                        </div>
+                    </div>
+
+                    <div class="flex items-center mr-2">
+                        <input
+                            type="number"
+                            class="input input-xs w-16"
+                            min="0"
                             bind:value={form.option.pauseBeforeUnlockSecond}
                         />
                         <span class="inline-block w-14 text-right">second</span>
@@ -249,11 +388,28 @@
                 <div
                     class="flex items-center justify-between bg-base-200 pb-2 pt-1 px-3"
                 >
-                    <span>Increase pause time per unlock</span>
+                    <div class="flex items-center gap-2">
+                        <span>Increase pause time per unlock</span>
+                        <div class="tooltip">
+                            <div class="tooltip-content -translate-x-6">
+                                <span class="text-xs font-mono">
+                                    Extra countdown time added in the 'Are you
+                                    sure?' prompt for each unlock. This delay
+                                    resets daily.
+                                </span>
+                            </div>
+                            <CircleQuestionMark
+                                size={12}
+                                class="text-gray-600 cursor-pointer"
+                            />
+                        </div>
+                    </div>
+
                     <div class="flex items-center mr-2">
                         <input
                             type="number"
                             class="input input-xs w-16"
+                            min="0"
                             bind:value={
                                 form.option.increasePausePerUnlockSecond
                             }
@@ -275,7 +431,7 @@
                 (e.key === "Enter" || e.key === " ") &&
                 (isSiteCollapsed = !isSiteCollapsed)}
         >
-            <span>Sites</span>
+            <span>Targeted Sites</span>
 
             <ChevronDown
                 size={20}
@@ -285,35 +441,78 @@
 
         {#if !isSiteCollapsed}
             <div class="flex flex-col">
-                <div
+                <form
                     class="flex items-center justify-between bg-base-200 py-2 px-3 gap-2"
+                    onsubmit={hanldeAddSite}
                 >
-                    <input
-                        type="text"
-                        class="input input-sm w-full"
-                        placeholder="example: instagram.com/reels/*"
-                    />
+                    <label class="input input-sm">
+                        <input
+                            type="text"
+                            class="grow"
+                            placeholder="example: instagram.com/reels/*"
+                            bind:value={addSiteInput}
+                        />
+                        <div class="tooltip">
+                            <div class="tooltip-content -translate-x-16">
+                                <span class="text-xs font-mono">
+                                    No need for `http://` or `https://`. Use `*`
+                                    as a wildcard. Example:
+                                    `youtube.com/shorts/*` targets all YouTube
+                                    shorts.
+                                </span>
+                            </div>
+                            <CircleAlert
+                                size={16}
+                                class="text-gray-600 cursor-pointer"
+                            />
+                        </div>
+                    </label>
 
-                    <button class="btn btn-sm btn-soft btn-primary w-24">
+                    <button
+                        class="btn btn-sm btn-soft btn-primary w-24"
+                        type="submit"
+                    >
                         Add Site
                     </button>
-                </div>
+                </form>
             </div>
 
             {#if form.sites}
                 {#each form.sites as site (site.id)}
-                    <SiteActionItem
-                        siteUrl={site.siteUrl}
-                        actions={site.actions}
-                    />
+                    <SiteActionItem {site} {handleDeleteSite} />
                 {/each}
             {/if}
         {/if}
     </section>
 
-    <div class="flex justify-center items-center w-full p-2 bg-base-100 {buttonSectionBgColor}">
-        <button class="btn btn-sm btn-soft btn-primary btn-wide">Save</button>
+    <div
+        class="flex justify-center items-center w-full p-2 bg-base-100 {buttonSectionBgColorClass}"
+    >
+        <button
+            class="btn btn-sm btn-soft btn-primary btn-wide"
+            onclick={handleSubmit}
+        >
+            Save
+        </button>
     </div>
 {:else}
     <div class="p-4 text-center">Loading form...</div>
 {/if}
+
+<!-- Delete Modal -->
+<!-- <dialog class="modal" bind:this={dialogElement}>
+    <div class="modal-box p-4 w-70">
+        <h3 class="text-lg font-bold">Are you sure?</h3>
+        <p class="mt-2">Delete "Block Reels" action</p>
+        <div class="modal-action flex">
+            <form method="dialog" class="flex-1">
+                <button class="btn btn-sm btn-soft w-full">Close</button>
+            </form>
+            <div class="flex-1">
+                <button class="btn btn-sm btn-soft btn-error w-full">
+                    Confirm
+                </button>
+            </div>
+        </div>
+    </div>
+</dialog> -->

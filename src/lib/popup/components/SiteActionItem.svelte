@@ -14,7 +14,7 @@
 
     let { siteUrl, actions }: Props = $props();
 
-    let isDropdownCollapsed = $state(false);
+    let isDropdownCollapsed = $state(true);
     const chevronClass = $derived(isDropdownCollapsed ? "" : "rotate-180");
 
     let dialogElement: HTMLDialogElement | undefined;

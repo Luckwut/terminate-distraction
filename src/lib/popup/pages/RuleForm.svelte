@@ -68,8 +68,20 @@
     let isOptionCollapsed = $state(true);
     const optionChevronClass = $derived(isOptionCollapsed ? "" : "rotate-180");
 
-    let isActionCollapsed = $state(false);
-    const actionChevronClass = $derived(isActionCollapsed ? "" : "rotate-180");
+    let isSiteCollapsed = $state(false);
+    const siteChevronClass = $derived(isSiteCollapsed ? "" : "rotate-180");
+
+    // let buttonSectionBgColor = $state<
+    //     "bg-base-100" | "bg-base-200" | "bg-base-300"
+    // >("bg-base-100");
+
+    let buttonSectionBgColor = $derived.by(() => {
+        if (!isSiteCollapsed && form?.sites.length !== 0) {
+            return "bg-base-300"
+        }
+
+        return isSiteCollapsed ? "bg-base-100" : "bg-base-200";
+    });
 
     function handleSubmit() {
         // TODO: Add new rule data into storage
@@ -258,20 +270,20 @@
             role="button"
             tabindex="0"
             class="flex justify-between items-center w-full p-2 cursor-pointer"
-            onclick={() => (isActionCollapsed = !isActionCollapsed)}
+            onclick={() => (isSiteCollapsed = !isSiteCollapsed)}
             onkeydown={(e) =>
                 (e.key === "Enter" || e.key === " ") &&
-                (isActionCollapsed = !isActionCollapsed)}
+                (isSiteCollapsed = !isSiteCollapsed)}
         >
             <span>Sites</span>
 
             <ChevronDown
                 size={20}
-                class="transition-transform {actionChevronClass}"
+                class="transition-transform {siteChevronClass}"
             />
         </div>
 
-        {#if !isActionCollapsed}
+        {#if !isSiteCollapsed}
             <div class="flex flex-col">
                 <div
                     class="flex items-center justify-between bg-base-200 py-2 px-3 gap-2"
@@ -298,6 +310,10 @@
             {/if}
         {/if}
     </section>
+
+    <div class="flex justify-center items-center w-full p-2 bg-base-100 {buttonSectionBgColor}">
+        <button class="btn btn-sm btn-soft btn-primary btn-wide">Save</button>
+    </div>
 {:else}
     <div class="p-4 text-center">Loading form...</div>
 {/if}

@@ -15,7 +15,7 @@ export const ruleMockData: Rule[] = [
         sites: [
             {
                 id: crypto.randomUUID(),
-                siteUrl: "*.youtube.com",
+                siteUrl: "*.youtube.com/*",
                 actions: [
                     {
                         id: crypto.randomUUID(),
@@ -70,7 +70,7 @@ export const ruleMockData: Rule[] = [
         sites: [
             {
                 id: crypto.randomUUID(),
-                siteUrl: "*.reddit.com",
+                siteUrl: "*.reddit.com/*",
                 actions: [
                     {
                         id: crypto.randomUUID(),
@@ -96,45 +96,8 @@ export const ruleMockData: Rule[] = [
     },
     {
         id: crypto.randomUUID(),
-        name: "Twitter",
-        enabled: false,
-        option: {
-            dailyLimit: 3,
-            cooldownMinute: 15,
-            unlockDurationMinute: 5,
-            pauseBeforeUnlockSecond: 20,
-            increasePausePerUnlockSecond: 5,
-        },
-        sites: [
-            {
-                id: crypto.randomUUID(),
-                siteUrl: "twitter.com",
-                actions: [
-                    {
-                        id: crypto.randomUUID(),
-                        type: "BLOCK_PAGE",
-                        label: "Twitter Full Block"
-                    }
-                ]
-            },
-            {
-                id: crypto.randomUUID(),
-                siteUrl: "twitter.com/home",
-                actions: [
-                    {
-                        id: crypto.randomUUID(),
-                        type: "HIDE_ELEMENT",
-                        label: "Twitter Timeline Feed",
-                        selector: "section[aria-labelledby='accessible-list-0']"
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        id: crypto.randomUUID(),
         name: "Netflix",
-        enabled: true,
+        enabled: false,
         option: {
             dailyLimit: 2,
             cooldownMinute: 60,
@@ -145,7 +108,7 @@ export const ruleMockData: Rule[] = [
         sites: [
             {
                 id: crypto.randomUUID(),
-                siteUrl: "*.netflix.com",
+                siteUrl: "*.netflix.com/*",
                 actions: [
                     {
                         id: crypto.randomUUID(),

@@ -35,6 +35,8 @@ export const rulesStore = {
 
     async update(newRules: Rule[]) {
         data = newRules;
-        await setRuleStorage(newRules);
+        
+        const raw = $state.snapshot(newRules);
+        await setRuleStorage(raw);
     }
 };

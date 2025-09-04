@@ -100,7 +100,7 @@
             ],
         };
 
-        form?.sites.push(site);
+        form.sites.push(site);
         addSiteInput = "";
     }
 
@@ -476,7 +476,7 @@
                     </button>
                 </form>
             </div>
-
+            
             {#if form.sites}
                 {#each form.sites as site (site.id)}
                     <SiteActionItem {site} {handleDeleteSite} />

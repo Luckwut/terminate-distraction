@@ -1,13 +1,8 @@
 <script lang="ts">
   import wxtLogo from "@/assets/wxt.svg";
   import {
-    ChevronDown,
-    LockOpen,
     Pencil,
-    Plus,
     Settings,
-    Settings2,
-    SquarePen,
   } from "@lucide/svelte";
 </script>
 

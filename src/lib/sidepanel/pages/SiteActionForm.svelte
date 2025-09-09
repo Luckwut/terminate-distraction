@@ -7,9 +7,27 @@
         Trash,
     } from "@lucide/svelte";
     import { router } from "@/lib/sidepanel/router.svelte";
+    import type { Site } from "@/lib/data/rules/types";
+    import { ruleFormStore } from "../ruleFormStore.svelte";
+
+    interface Props {
+        ruleId: string;
+        siteId: string;
+    }
+
+    let { ruleId, siteId }: Props = $props();
+
+    function getSiteData() {
+        return ruleFormStore.currentRule.sites.find((r) => r.id === siteId)!;
+    }
+
+    let site = $state<Site>(getSiteData());
 
     function navigateToRuleForm() {
-        router.navigate("ruleForm");
+        router.navigate({
+            name: "ruleForm",
+            params: { id: ruleId },
+        });
     }
 </script>
 
@@ -39,6 +57,7 @@
                         type="text"
                         class="grow"
                         placeholder="www.youtube.com/shorts/*"
+                        bind:value={site.siteUrl}
                     />
                 </label>
             </div>
@@ -109,7 +128,9 @@
 
         <div class="flex flex-col gap-2 p-3 bg-base-200 rounded text-sm mt-2">
             <div class="flex justify-between items-center gap-2 group">
-                <span class="flex-1 break-all group-hover:drop-shadow-md">Youtube Reels</span>
+                <span class="flex-1 break-all group-hover:drop-shadow-md"
+                    >Youtube Reels</span
+                >
                 <span
                     class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity"
                 >

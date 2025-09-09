@@ -27,7 +27,10 @@
     if (ruleToEdit) {
       ruleFormStore.setRule(ruleToEdit);
     } else {
-      router.navigate("home");
+      router.navigate({
+        name: "home",
+        params: {},
+      });
     }
   });
 
@@ -36,11 +39,18 @@
   const isEditMode = $derived(id !== null);
 
   function navigateToHome() {
-    router.navigate("home");
+    router.navigate({
+      name: "home",
+      params: {},
+    });
   }
 
-  function navigateToSiteActionForm() {
-    router.navigate("siteActionsForm");
+  function navigateToSiteActionForm(siteId: string) {
+    const ruleId = ruleFormStore.currentRule.id;
+    router.navigate({
+      name: "siteActionsForm",
+      params: { ruleId, siteId },
+    });
   }
 
   function handleAddSite() {
@@ -311,7 +321,7 @@
           <div class="flex items-center gap-2">
             <button
               class="flex-1 font-mono link link-primary text-start break-all"
-              onclick={navigateToSiteActionForm}
+              onclick={() => navigateToSiteActionForm(site.id)}
             >
               {site.siteUrl}
             </button>

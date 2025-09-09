@@ -50,7 +50,10 @@
     });
 
     function navigateToRuleForm() {
-        router.navigate("ruleForm", { id: p.id });
+        router.navigate({
+            name: "ruleForm",
+            params: { id: p.id },
+        });
     }
 </script>
 

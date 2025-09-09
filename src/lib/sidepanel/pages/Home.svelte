@@ -9,7 +9,10 @@
   const rules = $derived(rulesStore.rules);
 
   function navigateToRuleForm() {
-    router.navigate("ruleForm");
+    router.navigate({
+      name: "ruleForm",
+      params: {},
+    });
   }
 </script>
 

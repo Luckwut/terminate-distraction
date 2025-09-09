@@ -1,25 +1,25 @@
 type Page = 'home' | 'ruleForm' | 'siteActionsForm';
 
 type RouteParams = {
-    id?: string;
+  id?: string;
 };
 
-type Route = {
-    name: Page;
-    params: RouteParams;
-};
+type Route =
+  | { name: 'home'; params: {} }
+  | { name: 'ruleForm'; params: { id?: string } }
+  | { name: 'siteActionsForm'; params: { ruleId: string; siteId: string } };
 
 let currentRoute = $state<Route>({
-    name: 'home',
-    params: {}
+  name: 'home',
+  params: {}
 });
 
 export const router = {
-    get currentRoute() {
-        return currentRoute;
-    },
-    navigate(name: Page, params: RouteParams = {}) {
-        currentRoute.name = name;
-        currentRoute.params = params;
-    }
+  get currentRoute() {
+    return currentRoute;
+  },
+  navigate(route: Route) {
+    currentRoute.name = route.name;
+    currentRoute.params = route.params;
+  }
 }

@@ -18,7 +18,10 @@
         {:else if router.currentRoute.name === "ruleForm"}
           <RuleForm id={router.currentRoute.params.id} />
         {:else if router.currentRoute.name === "siteActionsForm"}
-          <SiteActionForm />
+          <SiteActionForm
+            ruleId={router.currentRoute.params.ruleId}
+            siteId={router.currentRoute.params.siteId}
+          />
         {/if}
       </div>
     {/key}

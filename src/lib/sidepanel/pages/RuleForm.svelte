@@ -158,7 +158,7 @@
       />
     </span>
 
-    <div class="flex items-center justify-between gap-2">
+    <div class="flex flex-col gap-2">
       <label class="input input-sm w-full">
         <span>https://</span>
         <input
@@ -167,7 +167,10 @@
           placeholder="www.youtube.com/shorts/*"
         />
       </label>
-      <button class="btn btn-primary btn-soft btn-sm rounded-lg">Add</button>
+      <div class="flex gap-2">
+        <button class="flex-1 btn btn-secondary btn-soft btn-sm rounded-lg">Current URL</button>
+        <button class="flex-1 btn btn-primary btn-soft btn-sm rounded-lg">Add</button>
+      </div>
     </div>
 
     <div class="flex flex-col gap-2 p-3 bg-base-200 rounded text-xs">

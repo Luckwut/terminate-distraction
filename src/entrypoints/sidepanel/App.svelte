@@ -16,7 +16,7 @@
         {#if router.currentRoute.name === "home"}
           <Home />
         {:else if router.currentRoute.name === "ruleForm"}
-          <RuleForm />
+          <RuleForm id={router.currentRoute.params.id} />
         {:else if router.currentRoute.name === "siteActionsForm"}
           <SiteActionForm />
         {/if}

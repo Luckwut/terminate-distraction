@@ -7,6 +7,14 @@
   } from "@lucide/svelte";
   import { router } from "@/lib/sidepanel/router.svelte";
 
+  interface Props {
+    id?: string | null;
+  }
+
+  let { id = null }: Props = $props();
+
+  const isEditMode = $derived(id !== null);
+
   function navigateToHome() {
     router.navigate("home");
   }

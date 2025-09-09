@@ -1,5 +1,6 @@
 <script lang="ts">
     import { Settings2 } from "@lucide/svelte";
+    import { router } from "@/lib/sidepanel/router.svelte";
 
     interface Props {
         id: string;
@@ -38,6 +39,10 @@
 
         return "text-green-600";
     });
+
+    function navigateToRuleForm() {
+        router.navigate("ruleForm", { id: p.id });
+    }
 </script>
 
 {#snippet buttonUnlock()}
@@ -95,7 +100,10 @@
         </span>
         <span class="flex gap-2 items-center">
             <span class="text-base-content/35">0 days streak</span>
-            <button class="btn btn-xs btn-soft hover:btn-primary btn-circle">
+            <button
+                class="btn btn-xs btn-soft hover:btn-primary btn-circle"
+                onclick={navigateToRuleForm}
+            >
                 <Settings2 size={12} />
             </button>
         </span>

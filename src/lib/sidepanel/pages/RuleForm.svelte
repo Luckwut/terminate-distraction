@@ -31,6 +31,8 @@
     }
   });
 
+  let ruleNameInputRef: HTMLInputElement;
+  let siteUrlInput = $state("");
   const isEditMode = $derived(id !== null);
 
   function navigateToHome() {
@@ -39,6 +41,22 @@
 
   function navigateToSiteActionForm() {
     router.navigate("siteActionsForm");
+  }
+
+  function handleAddSite() {
+    if (!siteUrlInput.trim()) return;
+    ruleFormStore.currentRule.sites.push({
+      id: crypto.randomUUID(),
+      siteUrl: siteUrlInput,
+      actions: [
+        // TODO: block page as default placeholder for now
+        {
+          id: crypto.randomUUID(),
+          type: "BLOCK_PAGE",
+        },
+      ],
+    });
+    siteUrlInput = "";
   }
 
   function handleDelete() {
@@ -51,7 +69,11 @@
   function handleSave(rule: Rule) {
     const rules = rulesStore.rules;
 
-    if (!rule.name.trim()) return;
+    if (!rule.name.trim()) {
+      ruleNameInputRef!.placeholder = "Name cannot be empty!";
+      ruleNameInputRef!.classList.add("input-error");
+      return;
+    }
     rule.name = rule.name.trim();
 
     for (const key in rule.option) {
@@ -93,8 +115,8 @@
         <input
           type="text"
           class="input input-sm w-52"
-          placeholder="Name cannot be empty!"
           bind:value={ruleFormStore.currentRule.name}
+          bind:this={ruleNameInputRef}
         />
       </div>
 
@@ -255,13 +277,17 @@
           type="text"
           class="grow"
           placeholder="www.youtube.com/shorts/*"
+          bind:value={siteUrlInput}
         />
       </label>
       <div class="flex gap-2">
         <button class="flex-1 btn btn-secondary btn-soft btn-sm rounded-lg">
           Current URL
         </button>
-        <button class="flex-1 btn btn-primary btn-soft btn-sm rounded-lg">
+        <button
+          class="flex-1 btn btn-primary btn-soft btn-sm rounded-lg"
+          onclick={handleAddSite}
+        >
           Add
         </button>
       </div>

@@ -2,6 +2,7 @@
   import wxtLogo from "@/assets/wxt.svg";
   import RuleItem from "@/lib/sidepanel/components/RuleItem.svelte";
   import { Settings } from "@lucide/svelte";
+  import { router } from "@/lib/sidepanel/router.svelte";
 
   const test = [
     {
@@ -19,6 +20,10 @@
       unlockCount: 0,
     },
   ];
+
+  function navigateToRuleForm() {
+    router.navigate("ruleForm");
+  }
 </script>
 
 <header
@@ -43,7 +48,10 @@
 </div>
 
 <div class="flex justify-center items-center p-2 border-t border-t-base-100">
-  <button class="btn btn-sm btn-soft btn-primary btn-wide rounded-full">
+  <button
+    class="btn btn-sm btn-soft btn-primary btn-wide rounded-full"
+    onclick={navigateToRuleForm}
+  >
     <span class="text-primary-content">Add New Rule</span>
   </button>
 </div>

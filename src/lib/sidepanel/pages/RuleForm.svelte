@@ -5,11 +5,16 @@
     CircleQuestionMark,
     Lock,
   } from "@lucide/svelte";
+  import { router } from "@/lib/sidepanel/router.svelte";
+
+  function navigateToHome() {
+    router.navigate("home");
+  }
 </script>
 
 <header class="flex items-center py-2 px-3 border-b border-b-base-100">
   <div class="flex items-center gap-2">
-    <button class="cursor-pointer">
+    <button class="cursor-pointer" onclick={navigateToHome}>
       <ArrowLeft size={20} />
     </button>
     <h1 class="text-lg">Add New Rule</h1>

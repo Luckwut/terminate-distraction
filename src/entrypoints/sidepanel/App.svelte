@@ -1,6 +1,7 @@
 <script lang="ts">
   import Home from "@/lib/sidepanel/pages/Home.svelte";
   import RuleForm from "@/lib/sidepanel/pages/RuleForm.svelte";
+  import SiteActionForm from "@/lib/sidepanel/pages/SiteActionForm.svelte";
   import { router } from "@/lib/sidepanel/router.svelte";
   import { fly } from "svelte/transition";
 </script>
@@ -16,6 +17,8 @@
           <Home />
         {:else if router.currentRoute.name === "ruleForm"}
           <RuleForm />
+        {:else if router.currentRoute.name === "siteActionsForm"}
+          <SiteActionForm />
         {/if}
       </div>
     {/key}

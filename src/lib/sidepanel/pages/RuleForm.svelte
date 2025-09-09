@@ -10,6 +10,10 @@
   function navigateToHome() {
     router.navigate("home");
   }
+
+  function navigateToSiteActionForm() {
+    router.navigate("siteActionsForm");
+  }
 </script>
 
 <header class="flex items-center py-2 px-3 border-b border-b-base-100">
@@ -34,7 +38,7 @@
         <span>Rule Name</span>
         <input
           type="text"
-          class="input input-sm rounded-lg w-52"
+          class="input input-sm w-52"
           placeholder="Name cannot be empty!"
         />
       </div>
@@ -155,7 +159,7 @@
     </span>
 
     <div class="flex items-center justify-between gap-2">
-      <label class="input input-sm rounded-lg w-full">
+      <label class="input input-sm w-full">
         <span>https://</span>
         <input
           type="text"
@@ -167,16 +171,19 @@
     </div>
 
     <div class="flex flex-col gap-2 p-3 bg-base-200 rounded text-xs">
-      <div class="flex justify-between items-center gap-2">
-        <span class="flex-1 font-mono link link-primary truncate">
+      <div class="flex items-center gap-2">
+        <button
+          class="flex-1 font-mono link link-primary text-start break-all"
+          onclick={navigateToSiteActionForm}
+        >
           *.youtube.com/shorts/*
-        </span>
+        </button>
         <span class="badge badge-xs badge-soft badge-error">
           <Lock size={8} />
         </span>
       </div>
       <div class="flex justify-between items-center gap-2">
-        <span class="flex-1 font-mono link link-primary truncate">
+        <span class="flex-1 font-mono link link-primary">
           www.youtube.com
         </span>
         <span class="badge badge-xs badge-soft">1</span>

@@ -78,11 +78,11 @@
     class="flex flex-col gap-2 bg-base-100 shadow rounded-xl p-2 max-w-lg w-full"
 >
     <div class="flex flex-1 gap-2 items-center text-sm">
-        <span class="flex flex-1 gap-2 min-w-0">
+        <span class="flex flex-1 items-center gap-2 min-w-0">
             <span class="font-semibold {displayDailyLimitClass}">
                 {p.unlockCount}/{p.dailyLimit}
             </span>
-            <span class="truncate flex-1">
+            <span class="flex-1 break-all">
                 {p.name}
             </span>
         </span>

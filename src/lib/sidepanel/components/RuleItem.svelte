@@ -12,12 +12,21 @@
 
     let p: Props = $props();
 
+    const hasDailyLimit = $derived(p.dailyLimit !== 0);
+
+    const formatUnlockCount = $derived.by(() => {
+        if (hasDailyLimit) {
+            return `${p.unlockCount}/${p.dailyLimit}`;
+        }
+        return `${p.unlockCount}/∞`;
+    });
+
     const displayButton = $derived.by(() => {
         if (!p.enabled) {
             return buttonDisabled;
         }
 
-        if (p.unlockCount >= p.dailyLimit) {
+        if (p.unlockCount >= p.dailyLimit && hasDailyLimit) {
             return buttonLocked;
         }
 
@@ -29,11 +38,11 @@
             return "text-base-content/35";
         }
 
-        if (p.unlockCount + 1 === p.dailyLimit) {
+        if (p.unlockCount + 1 === p.dailyLimit && hasDailyLimit) {
             return "text-yellow-600";
         }
 
-        if (p.unlockCount === p.dailyLimit) {
+        if (p.unlockCount === p.dailyLimit && hasDailyLimit) {
             return "text-red-600";
         }
 
@@ -85,7 +94,7 @@
     <div class="flex flex-1 gap-2 items-center text-sm">
         <span class="flex flex-1 items-center gap-2 min-w-0">
             <span class="font-semibold {displayDailyLimitClass}">
-                {p.unlockCount}/{p.dailyLimit}
+                {formatUnlockCount}
             </span>
             <span class="flex-1 break-all">
                 {p.name}

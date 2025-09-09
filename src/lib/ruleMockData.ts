@@ -1,4 +1,4 @@
-import { Rule } from "@/lib/types";
+import { Rule } from "@/lib/rules/types";
 
 export const ruleMockData: Rule[] = [
     {

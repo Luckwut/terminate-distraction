@@ -1,4 +1,4 @@
-import type { Rule } from "@/lib/types";
+import type { Rule } from "@/lib/rules/types";
 import { ruleMockData } from "@/lib/ruleMockData"; // TEMPORARY
 
 const RULES_STORAGE_KEY = "local:rules";

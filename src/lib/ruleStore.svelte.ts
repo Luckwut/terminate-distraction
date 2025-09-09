@@ -1,4 +1,4 @@
-import type { Rule } from "@/lib/types";
+import type { Rule } from "@/lib/rules/types";
 import { getRuleStorage, initMockData, setRuleStorage } from "@/lib/ruleStorage";
 
 let data = $state<Rule[] | null>(null);

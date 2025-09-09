@@ -28,7 +28,7 @@
     <img src={wxtLogo} alt="Terminate Distraction Logo" class="w-6" />
     <h1 class="text-lg font-bold">Terminate Distraction</h1>
   </div>
-  
+
   <button class="cursor-pointer">
     <Settings size={20} />
   </button>

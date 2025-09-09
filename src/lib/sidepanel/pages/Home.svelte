@@ -32,9 +32,9 @@
   {#await loadPromise then}
     {#each rules as { id, name, enabled, option } (id)}
       <RuleItem
-        id={id}
-        name={name}
-        enabled={enabled}
+        {id}
+        {name}
+        {enabled}
         dailyLimit={option.dailyLimit}
         unlockCount={0}
       />

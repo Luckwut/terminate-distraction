@@ -6,12 +6,30 @@
     Lock,
   } from "@lucide/svelte";
   import { router } from "@/lib/sidepanel/router.svelte";
+  import { rulesStore } from "@/lib/data/rules/store.svelte";
+  import { ruleFormStore } from "../ruleFormStore.svelte";
+  import type { Rule } from "@/lib/data/rules/types";
 
   interface Props {
     id?: string | null;
   }
 
   let { id = null }: Props = $props();
+
+  onMount(async () => {
+    if (id === null) {
+      ruleFormStore.reset();
+      return;
+    }
+
+    await rulesStore.load();
+    const ruleToEdit = rulesStore.rules.find((r) => r.id === id);
+    if (ruleToEdit) {
+      ruleFormStore.setRule(ruleToEdit);
+    } else {
+      router.navigate("home");
+    }
+  });
 
   const isEditMode = $derived(id !== null);
 
@@ -22,6 +40,32 @@
   function navigateToSiteActionForm() {
     router.navigate("siteActionsForm");
   }
+
+  function handleDelete() {
+    const rules = rulesStore.rules;
+    const updatedRules = rules.filter((r) => r.id !== id);
+    rulesStore.update(updatedRules);
+    navigateToHome();
+  }
+
+  function handleSave(rule: Rule) {
+    const rules = rulesStore.rules;
+
+    if (!rule.name.trim()) return;
+    rule.name = rule.name.trim();
+
+    for (const key in rule.option) {
+      const optionKey = key as keyof Rule["option"];
+      rule.option[optionKey] = Number(rule.option[optionKey]) || 0;
+    }
+
+    const updatedRules = isEditMode
+      ? rules.map((r) => (r.id === id ? rule : r))
+      : [...rules, rule];
+
+    rulesStore.update(updatedRules);
+    navigateToHome();
+  }
 </script>
 
 <header class="flex items-center py-2 px-3 border-b border-b-base-100">
@@ -29,7 +73,9 @@
     <button class="cursor-pointer" onclick={navigateToHome}>
       <ArrowLeft size={20} />
     </button>
-    <h1 class="text-lg">Add New Rule</h1>
+    <h1 class="text-lg">
+      {isEditMode ? "Add New Rule" : "Edit Rule"}
+    </h1>
   </div>
 </header>
 
@@ -48,6 +94,7 @@
           type="text"
           class="input input-sm w-52"
           placeholder="Name cannot be empty!"
+          bind:value={ruleFormStore.currentRule.name}
         />
       </div>
 
@@ -58,16 +105,22 @@
           <input
             type="checkbox"
             class="toggle toggle-primary toggle-sm checked:bg-primary checked:text-primary-content"
+            bind:checked={ruleFormStore.currentRule.enabled}
           />
         </div>
       </div>
 
-      <div class="flex items-center justify-between">
-        <span>Delete Rule</span>
-        <button class="btn btn-error btn-soft btn-xs px-4 rounded-xl">
-          Delete
-        </button>
-      </div>
+      {#if isEditMode}
+        <div class="flex items-center justify-between">
+          <span>Delete Rule</span>
+          <button
+            class="btn btn-error btn-soft btn-xs px-4 rounded-xl"
+            onclick={handleDelete}
+          >
+            Delete
+          </button>
+        </div>
+      {/if}
     </div>
   </div>
 
@@ -92,7 +145,12 @@
           />
         </div>
         <div class="flex items-center mr-2">
-          <input type="number" class="input input-xs w-16" min="0" />
+          <input
+            type="number"
+            class="input input-xs w-16"
+            min="0"
+            bind:value={ruleFormStore.currentRule.option.dailyLimit}
+          />
           <span class="inline-block w-12 text-right">unlock</span>
         </div>
       </div>
@@ -106,7 +164,12 @@
           />
         </div>
         <div class="flex items-center mr-2">
-          <input type="number" class="input input-xs w-16" min="0" />
+          <input
+            type="number"
+            class="input input-xs w-16"
+            min="0"
+            bind:value={ruleFormStore.currentRule.option.unlockDurationMinute}
+          />
           <span class="inline-block w-12 text-right">minute</span>
         </div>
       </div>
@@ -120,7 +183,12 @@
           />
         </div>
         <div class="flex items-center mr-2">
-          <input type="number" class="input input-xs w-16" min="0" />
+          <input
+            type="number"
+            class="input input-xs w-16"
+            min="0"
+            bind:value={ruleFormStore.currentRule.option.cooldownMinute}
+          />
           <span class="inline-block w-12 text-right">minute</span>
         </div>
       </div>
@@ -134,7 +202,14 @@
           />
         </div>
         <div class="flex items-center mr-2">
-          <input type="number" class="input input-xs w-16" min="0" />
+          <input
+            type="number"
+            class="input input-xs w-16"
+            min="0"
+            bind:value={
+              ruleFormStore.currentRule.option.pauseBeforeUnlockSecond
+            }
+          />
           <span class="inline-block w-12 text-right">second</span>
         </div>
       </div>
@@ -148,7 +223,14 @@
           />
         </div>
         <div class="flex items-center mr-2">
-          <input type="number" class="input input-xs w-16" min="0" />
+          <input
+            type="number"
+            class="input input-xs w-16"
+            min="0"
+            bind:value={
+              ruleFormStore.currentRule.option.increasePausePerUnlockSecond
+            }
+          />
           <span class="inline-block w-12 text-right">second</span>
         </div>
       </div>
@@ -176,35 +258,57 @@
         />
       </label>
       <div class="flex gap-2">
-        <button class="flex-1 btn btn-secondary btn-soft btn-sm rounded-lg">Current URL</button>
-        <button class="flex-1 btn btn-primary btn-soft btn-sm rounded-lg">Add</button>
+        <button class="flex-1 btn btn-secondary btn-soft btn-sm rounded-lg">
+          Current URL
+        </button>
+        <button class="flex-1 btn btn-primary btn-soft btn-sm rounded-lg">
+          Add
+        </button>
       </div>
     </div>
 
-    <div class="flex flex-col gap-2 p-3 bg-base-200 rounded text-xs">
-      <div class="flex items-center gap-2">
-        <button
-          class="flex-1 font-mono link link-primary text-start break-all"
-          onclick={navigateToSiteActionForm}
-        >
-          *.youtube.com/shorts/*
-        </button>
+    {#if ruleFormStore.currentRule.sites.length !== 0}
+      {#snippet blockedSiteIndicator()}
         <span class="badge badge-xs badge-soft badge-error">
           <Lock size={8} />
         </span>
-      </div>
-      <div class="flex justify-between items-center gap-2">
-        <span class="flex-1 font-mono link link-primary">
-          www.youtube.com
+      {/snippet}
+
+      {#snippet hiddenElementIndicator(amount: number)}
+        <span class="badge badge-xs badge-soft">
+          {amount}
         </span>
-        <span class="badge badge-xs badge-soft">1</span>
+      {/snippet}
+
+      <div class="flex flex-col gap-2 p-3 bg-base-200 rounded text-xs">
+        {#each ruleFormStore.currentRule.sites as site (site.id)}
+          <div class="flex items-center gap-2">
+            <button
+              class="flex-1 font-mono link link-primary text-start break-all"
+              onclick={navigateToSiteActionForm}
+            >
+              {site.siteUrl}
+            </button>
+            {#if site.actions.some((action) => action.type === "BLOCK_PAGE")}
+              {@render blockedSiteIndicator()}
+            {:else}
+              {@render hiddenElementIndicator(
+                site.actions.filter((action) => action.type === "HIDE_ELEMENT")
+                  .length,
+              )}
+            {/if}
+          </div>
+        {/each}
       </div>
-    </div>
+    {/if}
   </div>
 </div>
 
 <div class="flex justify-center items-center p-2 border-t border-t-base-100">
-  <button class="btn btn-sm btn-soft btn-primary btn-wide rounded-full">
+  <button
+    class="btn btn-sm btn-soft btn-primary btn-wide rounded-full"
+    onclick={() => handleSave(ruleFormStore.currentRule)}
+  >
     <span class="text-primary-content">Save</span>
   </button>
 </div>

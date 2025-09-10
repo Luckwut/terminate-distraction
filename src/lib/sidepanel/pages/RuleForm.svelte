@@ -9,6 +9,7 @@
   import { rulesStore } from "@/lib/data/rules/store.svelte";
   import { ruleFormStore } from "../ruleFormStore.svelte";
   import type { Rule, Site } from "@/lib/data/rules/types";
+  import { blur } from "svelte/transition";
 
   interface Props {
     id?: string | null;
@@ -31,8 +32,13 @@
     }
   });
 
-  let ruleNameInputRef: HTMLInputElement;
+  let siteUrlInputRef: HTMLInputElement | null;
+  let isSiteUrlInvalid = $state(false);
+  let urlInvalidTimeout: ReturnType<typeof setTimeout> | null = $state(null);
+
+  let ruleNameInputRef: HTMLInputElement | null;
   let siteUrlInput = $state("");
+
   const isEditMode = $derived(id !== null);
 
   function navigateToHome() {
@@ -55,11 +61,43 @@
       .length;
   }
 
+  function checkUrlValidity(siteUrl: string) {
+    const url = siteUrl.trim();
+
+    if (!url) return false;
+    if (/\s/.test(url)) return false;
+
+    const pattern = /^(\*\.)?([\w-]+\.)+[a-zA-Z]{2,}(\/[\w.*-]*)*$/;
+
+    return pattern.test(url);
+  }
+
+  function handleURLInvalid() {
+    if (urlInvalidTimeout) {
+      clearTimeout(urlInvalidTimeout);
+    }
+
+    siteUrlInputRef?.classList.add("input-error");
+    isSiteUrlInvalid = true;
+
+    urlInvalidTimeout = setTimeout(() => {
+      siteUrlInputRef?.classList.remove("input-error");
+      isSiteUrlInvalid = false;
+      urlInvalidTimeout = null;
+    }, 1000);
+  }
+
   function handleAddSite() {
-    if (!siteUrlInput.trim()) return;
+    const url = siteUrlInput.replace(/^https?:\/\//, '');
+
+    if (!checkUrlValidity(url)) {
+      handleURLInvalid();
+      return;
+    }
+
     ruleFormStore.currentRule.sites.push({
       id: crypto.randomUUID(),
-      siteUrl: siteUrlInput,
+      siteUrl: url,
       actions: [],
     });
     siteUrlInput = "";
@@ -284,18 +322,34 @@
           class="grow"
           placeholder="www.youtube.com/shorts/*"
           bind:value={siteUrlInput}
+          bind:this={siteUrlInputRef}
         />
       </label>
       <div class="flex gap-2">
         <button class="flex-1 btn btn-secondary btn-soft btn-sm rounded-lg">
           Current URL
         </button>
-        <button
-          class="flex-1 btn btn-primary btn-soft btn-sm rounded-lg"
-          onclick={handleAddSite}
-        >
-          Add
-        </button>
+        <div class="relative flex-1 overflow-hidden">
+          {#key isSiteUrlInvalid}
+            <div class="absolute inset-0 flex" transition:blur>
+              {#if isSiteUrlInvalid}
+                <button
+                  class="flex-1 btn btn-error btn-soft btn-sm rounded-lg"
+                  onclick={handleAddSite}
+                >
+                  Invalid URL format
+                </button>
+              {:else}
+                <button
+                  class="flex-1 btn btn-primary btn-soft btn-sm rounded-lg"
+                  onclick={handleAddSite}
+                >
+                  Add
+                </button>
+              {/if}
+            </div>
+          {/key}
+        </div>
       </div>
     </div>
 

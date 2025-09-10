@@ -191,7 +191,9 @@
       <div class="flex items-center justify-between">
         <span>Rule Enabled</span>
         <div class="flex items-center gap-2">
-          <span class="text-xs text-base-content/35">Disabled</span>
+          <span class="text-xs text-base-content/35">
+            {ruleFormStore.currentRule.enabled ? "Active" : "Disabled"}
+          </span>
           <input
             type="checkbox"
             class="toggle toggle-primary toggle-sm checked:bg-primary checked:text-primary-content"

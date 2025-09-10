@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { ArrowLeft, ChevronDown, CircleQuestionMark } from "@lucide/svelte";
+  import { ArrowLeft, ChevronUp, CircleQuestionMark } from "@lucide/svelte";
   import { router } from "@/lib/sidepanel/router.svelte";
   import { rulesStore } from "@/lib/data/rules/store.svelte";
   import { ruleFormStore } from "../ruleFormStore.svelte";
   import type { Rule, Site } from "@/lib/data/rules/types";
-  import { blur } from "svelte/transition";
+  import { blur, slide } from "svelte/transition";
 
   interface Props {
     id?: string | null;
@@ -36,6 +36,11 @@
 
   let ruleNameInputRef: HTMLInputElement | null;
   let siteUrlInput = $state("");
+
+  let isAdditionalOptionsOpen = $state(true);
+  const advancedOptionChevronClass = $derived(
+    isAdditionalOptionsOpen ? "" : "-rotate-180",
+  );
 
   const isEditMode = $derived(id !== null);
 
@@ -144,7 +149,7 @@
   </div>
 </header>
 
-<div
+<section
   class="flex flex-col flex-1 items-center gap-2 p-2 min-h-0 overflow-y-auto topography-pattern scrollbar-hidden"
 >
   <div
@@ -189,120 +194,133 @@
     </div>
   </div>
 
-  <div
+  <section
     class="flex flex-col gap-2 bg-base-100 shadow rounded-lg p-3 max-w-lg w-full"
   >
-    <div class="flex justify-between">
+    <div
+      role="button"
+      tabindex="0"
+      class="flex justify-between cursor-pointer"
+      onclick={() => (isAdditionalOptionsOpen = !isAdditionalOptionsOpen)}
+      onkeydown={(e) =>
+        (e.key === "Enter" || e.key === " ") &&
+        (isAdditionalOptionsOpen = !isAdditionalOptionsOpen)}
+    >
       <h1 class="text-lg">Additional Options</h1>
       <div class="flex items-center gap-2">
         <span class="text-xs opacity-35">Optional</span>
-        <ChevronDown size={20} class="transition-transform" />
+        <ChevronUp
+          size={20}
+          class="transition-transform {advancedOptionChevronClass}"
+        />
       </div>
     </div>
 
-    <div class="flex flex-col gap-2">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-1">
-          <span>Daily limit</span>
-          <CircleQuestionMark
-            size={12}
-            class="text-gray-600 hover:text-primary transition cursor-pointer"
-          />
+    {#if isAdditionalOptionsOpen}
+      <div class="flex flex-col gap-2" transition:slide>
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-1">
+            <span>Daily limit</span>
+            <CircleQuestionMark
+              size={12}
+              class="text-gray-600 hover:text-primary transition cursor-pointer"
+            />
+          </div>
+          <div class="flex items-center mr-2">
+            <input
+              type="number"
+              class="input input-xs w-16"
+              min="0"
+              bind:value={ruleFormStore.currentRule.option.dailyLimit}
+            />
+            <span class="inline-block w-12 text-right">unlock</span>
+          </div>
         </div>
-        <div class="flex items-center mr-2">
-          <input
-            type="number"
-            class="input input-xs w-16"
-            min="0"
-            bind:value={ruleFormStore.currentRule.option.dailyLimit}
-          />
-          <span class="inline-block w-12 text-right">unlock</span>
+
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-1">
+            <span>Unlock Duration</span>
+            <CircleQuestionMark
+              size={12}
+              class="text-gray-600 hover:text-primary transition cursor-pointer"
+            />
+          </div>
+          <div class="flex items-center mr-2">
+            <input
+              type="number"
+              class="input input-xs w-16"
+              min="0"
+              bind:value={ruleFormStore.currentRule.option.unlockDurationMinute}
+            />
+            <span class="inline-block w-12 text-right">minute</span>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-1">
+            <span>Cooldown between unlock</span>
+            <CircleQuestionMark
+              size={12}
+              class="text-gray-600 hover:text-primary transition cursor-pointer"
+            />
+          </div>
+          <div class="flex items-center mr-2">
+            <input
+              type="number"
+              class="input input-xs w-16"
+              min="0"
+              bind:value={ruleFormStore.currentRule.option.cooldownMinute}
+            />
+            <span class="inline-block w-12 text-right">minute</span>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-1">
+            <span>Pause before unlock</span>
+            <CircleQuestionMark
+              size={12}
+              class="text-gray-600 hover:text-primary transition cursor-pointer"
+            />
+          </div>
+          <div class="flex items-center mr-2">
+            <input
+              type="number"
+              class="input input-xs w-16"
+              min="0"
+              bind:value={
+                ruleFormStore.currentRule.option.pauseBeforeUnlockSecond
+              }
+            />
+            <span class="inline-block w-12 text-right">second</span>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-1">
+            <span>Increase pause time per unlock</span>
+            <CircleQuestionMark
+              size={12}
+              class="text-gray-600 hover:text-primary transition cursor-pointer"
+            />
+          </div>
+          <div class="flex items-center mr-2">
+            <input
+              type="number"
+              class="input input-xs w-16"
+              min="0"
+              bind:value={
+                ruleFormStore.currentRule.option.increasePausePerUnlockSecond
+              }
+            />
+            <span class="inline-block w-12 text-right">second</span>
+          </div>
         </div>
       </div>
+    {/if}
+  </section>
 
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-1">
-          <span>Unlock Duration</span>
-          <CircleQuestionMark
-            size={12}
-            class="text-gray-600 hover:text-primary transition cursor-pointer"
-          />
-        </div>
-        <div class="flex items-center mr-2">
-          <input
-            type="number"
-            class="input input-xs w-16"
-            min="0"
-            bind:value={ruleFormStore.currentRule.option.unlockDurationMinute}
-          />
-          <span class="inline-block w-12 text-right">minute</span>
-        </div>
-      </div>
-
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-1">
-          <span>Cooldown between unlock</span>
-          <CircleQuestionMark
-            size={12}
-            class="text-gray-600 hover:text-primary transition cursor-pointer"
-          />
-        </div>
-        <div class="flex items-center mr-2">
-          <input
-            type="number"
-            class="input input-xs w-16"
-            min="0"
-            bind:value={ruleFormStore.currentRule.option.cooldownMinute}
-          />
-          <span class="inline-block w-12 text-right">minute</span>
-        </div>
-      </div>
-
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-1">
-          <span>Pause before unlock</span>
-          <CircleQuestionMark
-            size={12}
-            class="text-gray-600 hover:text-primary transition cursor-pointer"
-          />
-        </div>
-        <div class="flex items-center mr-2">
-          <input
-            type="number"
-            class="input input-xs w-16"
-            min="0"
-            bind:value={
-              ruleFormStore.currentRule.option.pauseBeforeUnlockSecond
-            }
-          />
-          <span class="inline-block w-12 text-right">second</span>
-        </div>
-      </div>
-
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-1">
-          <span>Increase pause time per unlock</span>
-          <CircleQuestionMark
-            size={12}
-            class="text-gray-600 hover:text-primary transition cursor-pointer"
-          />
-        </div>
-        <div class="flex items-center mr-2">
-          <input
-            type="number"
-            class="input input-xs w-16"
-            min="0"
-            bind:value={
-              ruleFormStore.currentRule.option.increasePausePerUnlockSecond
-            }
-          />
-          <span class="inline-block w-12 text-right">second</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div
+  <section
     class="flex flex-col gap-2 bg-base-100 shadow rounded-lg p-3 max-w-lg w-full"
   >
     <span class="flex items-center gap-2">
@@ -385,8 +403,8 @@
         {/each}
       </div>
     {/if}
-  </div>
-</div>
+  </section>
+</section>
 
 <div class="flex justify-center items-center p-2 border-t border-t-base-100">
   <button

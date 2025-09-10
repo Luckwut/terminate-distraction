@@ -7,19 +7,24 @@ type RouteParams = {
 type Route =
   | { name: 'home'; params: {} }
   | { name: 'ruleForm'; params: { id?: string } }
-  | { name: 'siteActionsForm'; params: { ruleId: string; siteId: string } };
+  | { name: 'siteActionsForm'; params: { id: string } };
 
-let currentRoute = $state<Route>({
-  name: 'home',
-  params: {}
-});
+let routeStack = $state<Route[]>([
+  {
+    name: "home",
+    params: {}
+  }
+]);
+let currentRoute = $derived(routeStack[routeStack.length - 1]);
 
 export const router = {
   get currentRoute() {
     return currentRoute;
   },
-  navigate(route: Route) {
-    currentRoute.name = route.name;
-    currentRoute.params = route.params;
-  }
+  push(route: Route) {
+    routeStack.push(route);
+  },
+  pop() {
+    routeStack.pop();
+  },
 }

@@ -27,10 +27,7 @@
     if (ruleToEdit) {
       ruleFormStore.setRule(ruleToEdit);
     } else {
-      router.navigate({
-        name: "home",
-        params: {},
-      });
+      router.pop();
     }
   });
 
@@ -39,17 +36,13 @@
   const isEditMode = $derived(id !== null);
 
   function navigateToHome() {
-    router.navigate({
-      name: "home",
-      params: {},
-    });
+    router.pop();
   }
 
   function navigateToSiteActionForm(siteId: string) {
-    const ruleId = ruleFormStore.currentRule.id;
-    router.navigate({
+    router.push({
       name: "siteActionsForm",
-      params: { ruleId, siteId },
+      params: { id: siteId },
     });
   }
 

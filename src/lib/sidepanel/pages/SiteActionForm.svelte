@@ -11,23 +11,19 @@
     import { ruleFormStore } from "../ruleFormStore.svelte";
 
     interface Props {
-        ruleId: string;
-        siteId: string;
+        id: string;
     }
 
-    let { ruleId, siteId }: Props = $props();
+    let { id }: Props = $props();
 
     function getSiteData() {
-        return ruleFormStore.currentRule.sites.find((r) => r.id === siteId)!;
+        return ruleFormStore.currentRule.sites.find((r) => r.id === id)!;
     }
 
     let site = $state<Site>(getSiteData());
 
     function navigateToRuleForm() {
-        router.navigate({
-            name: "ruleForm",
-            params: { id: ruleId },
-        });
+        router.pop();
     }
 </script>
 

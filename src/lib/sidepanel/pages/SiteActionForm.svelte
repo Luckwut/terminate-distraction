@@ -16,14 +16,25 @@
 
     let { id }: Props = $props();
 
+    $inspect(ruleFormStore.currentRule);
+
     function getSiteData() {
-        return ruleFormStore.currentRule.sites.find((r) => r.id === id)!;
+        const snapshotRule = $state.snapshot(ruleFormStore.currentRule);
+        return snapshotRule.sites.find((r) => r.id === id)!;
     }
 
     let site = $state<Site>(getSiteData());
 
     function navigateToRuleForm() {
         router.pop();
+    }
+
+    function handleRemoveSite() {
+        const updatedSites = ruleFormStore.currentRule.sites.filter(
+            (s) => s.id !== id,
+        );
+        ruleFormStore.currentRule.sites = updatedSites;
+        navigateToRuleForm();
     }
 </script>
 
@@ -78,6 +89,7 @@
                 <button
                     class="btn btn-error btn-soft btn-xs px-4 rounded-xl"
                     title="Remove this site"
+                    onclick={handleRemoveSite}
                 >
                     Remove
                 </button>

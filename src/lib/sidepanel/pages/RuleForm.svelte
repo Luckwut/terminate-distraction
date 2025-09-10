@@ -1,10 +1,5 @@
 <script lang="ts">
-  import {
-    ArrowLeft,
-    ChevronDown,
-    CircleQuestionMark,
-    Lock,
-  } from "@lucide/svelte";
+  import { ArrowLeft, ChevronDown, CircleQuestionMark } from "@lucide/svelte";
   import { router } from "@/lib/sidepanel/router.svelte";
   import { rulesStore } from "@/lib/data/rules/store.svelte";
   import { ruleFormStore } from "../ruleFormStore.svelte";
@@ -17,6 +12,8 @@
 
   let { id = null }: Props = $props();
 
+  $inspect(ruleFormStore.currentRule);
+
   onMount(async () => {
     if (id === null) {
       ruleFormStore.reset();
@@ -24,11 +21,14 @@
     }
 
     await rulesStore.load();
-    const ruleToEdit = rulesStore.rules.find((r) => r.id === id);
-    if (ruleToEdit) {
-      ruleFormStore.setRule(ruleToEdit);
-    } else {
-      router.pop();
+
+    if (ruleFormStore.currentRule.id !== id) {
+      const ruleToEdit = rulesStore.rules.find((r) => r.id === id);
+      if (ruleToEdit) {
+        ruleFormStore.setRule(ruleToEdit);
+      } else {
+        router.pop();
+      }
     }
   });
 
@@ -42,6 +42,7 @@
   const isEditMode = $derived(id !== null);
 
   function navigateToHome() {
+    ruleFormStore.reset();
     router.pop();
   }
 
@@ -88,7 +89,7 @@
   }
 
   function handleAddSite() {
-    const url = siteUrlInput.replace(/^https?:\/\//, '');
+    const url = siteUrlInput.replace(/^https?:\/\//, "");
 
     if (!checkUrlValidity(url)) {
       handleURLInvalid();

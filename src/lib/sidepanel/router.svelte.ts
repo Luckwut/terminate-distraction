@@ -1,9 +1,3 @@
-type Page = 'home' | 'ruleForm' | 'siteActionsForm';
-
-type RouteParams = {
-  id?: string;
-};
-
 type Route =
   | { name: 'home'; params: {} }
   | { name: 'ruleForm'; params: { id?: string } }

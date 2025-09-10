@@ -1,4 +1,4 @@
-import { initInitialData } from "@/lib/data/rules/store.svelte";
+import { initPresetData } from "@/lib/data/rules/store.svelte";
 
 export default defineBackground(() => {
   console.log('Hello background!', { id: browser.runtime.id });
@@ -7,7 +7,7 @@ export default defineBackground(() => {
 
   browser.runtime.onInstalled.addListener(async (details) => {
     if (details.reason === "install") {
-      await initInitialData();
+      await initPresetData();
     }
   });
 });

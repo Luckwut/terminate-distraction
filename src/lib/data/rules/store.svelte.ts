@@ -1,5 +1,5 @@
 import { Rule } from "@/lib/data/rules/types";
-import { initialData } from "@/lib/data/rules/initialData";
+import { presetData } from "@/lib/data/rules/presetData";
 
 const RULES_STORAGE_KEY = "local:rules";
 const rulesStorage = storage.defineItem<Rule[]>(RULES_STORAGE_KEY, {
@@ -52,9 +52,9 @@ export const rulesStore = {
     }
 };
 
-export async function initInitialData() {
+export async function initPresetData() {
     const existing = await getRuleStorage();
     if (!existing || existing.length === 0) {
-        await setRuleStorage(initialData);
+        await setRuleStorage(presetData);
     }
 }

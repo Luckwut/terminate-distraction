@@ -1,6 +1,6 @@
-import { Rule } from "./types";
+import { Rule } from "@/lib/data/rules/types";
 
-export const initialData: Rule[] = [
+export const presetData: Rule[] = [
   {
     id: crypto.randomUUID(),
     name: "YouTube",

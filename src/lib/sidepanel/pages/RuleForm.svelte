@@ -2,9 +2,10 @@
   import { ArrowLeft, ChevronUp, CircleQuestionMark } from "@lucide/svelte";
   import { router } from "@/lib/sidepanel/router.svelte";
   import { rulesStore } from "@/lib/data/rules/store.svelte";
-  import { ruleFormStore } from "../ruleFormStore.svelte";
+  import { ruleFormStore } from "@/lib/sidepanel/ruleFormStore.svelte";
   import type { Rule, Site } from "@/lib/data/rules/types";
   import { blur, slide } from "svelte/transition";
+  import { sendMessage } from "@/lib/messaging";
 
   interface Props {
     id?: string | null;
@@ -44,6 +45,25 @@
 
   const isEditMode = $derived(id !== null);
 
+  function removeProtocol(url: string) {
+    return url.replace(/^https?:\/\//, "");
+  }
+
+  async function getCurrentSiteUrl(): Promise<string> {
+    try {
+      return await sendMessage("getCurrentSiteUrl");
+    } catch (error) {
+      console.error("Failed to get current URL:", error);
+      return "";
+    }
+  }
+
+  async function fetchUrl() {
+    const rawUrl = await getCurrentSiteUrl();
+    const url = removeProtocol(rawUrl);
+    siteUrlInput = url.endsWith("/") ? url.slice(0, -1) : url;
+  }
+
   function navigateToHome() {
     ruleFormStore.reset();
     router.pop();
@@ -76,7 +96,7 @@
     return pattern.test(url);
   }
 
-  function handleURLInvalid() {
+  function handleUrlInvalid() {
     if (urlInvalidTimeout) {
       clearTimeout(urlInvalidTimeout);
     }
@@ -92,10 +112,10 @@
   }
 
   function handleAddSite() {
-    const url = siteUrlInput.replace(/^https?:\/\//, "");
+    const url = removeProtocol(siteUrlInput);
 
     if (!checkUrlValidity(url)) {
-      handleURLInvalid();
+      handleUrlInvalid();
       return;
     }
 
@@ -343,7 +363,10 @@
         />
       </label>
       <div class="flex gap-2">
-        <button class="flex-1 btn btn-secondary btn-soft btn-sm rounded-lg">
+        <button
+          class="flex-1 btn btn-secondary btn-soft btn-sm rounded-lg"
+          onclick={fetchUrl}
+        >
           Current URL
         </button>
         <div class="relative flex-1 overflow-hidden">

@@ -1,4 +1,5 @@
 import { initPresetData } from "@/lib/data/rules/store.svelte";
+import { onMessage } from "@/lib/messaging";
 
 export default defineBackground(() => {
   console.log('Hello background!', { id: browser.runtime.id });
@@ -9,5 +10,10 @@ export default defineBackground(() => {
     if (details.reason === "install") {
       await initPresetData();
     }
+  });
+
+  onMessage('getCurrentSiteUrl', async () => {
+    const tabs = await browser.tabs.query({ active: true, currentWindow: true });
+    return tabs[0]?.url || '';
   });
 });

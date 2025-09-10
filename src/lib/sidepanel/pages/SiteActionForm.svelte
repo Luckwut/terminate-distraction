@@ -8,7 +8,7 @@
     } from "@lucide/svelte";
     import { router } from "@/lib/sidepanel/router.svelte";
     import type { Site } from "@/lib/data/rules/types";
-    import { ruleFormStore } from "../ruleFormStore.svelte";
+    import { ruleFormStore } from "@/lib/sidepanel/ruleFormStore.svelte";
 
     interface Props {
         id: string;

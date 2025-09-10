@@ -7,7 +7,7 @@ export default defineConfig({
   modules: ['@wxt-dev/module-svelte'],
   manifest: {
     action: {},
-    permissions: ['storage'],
+    permissions: ['storage', 'tabs', 'scripting'],
   },
   vite: () => ({
     plugins: [tailwindcss()],

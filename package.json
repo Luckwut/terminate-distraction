@@ -27,6 +27,7 @@
     "wxt": "^0.20.6"
   },
   "dependencies": {
-    "@lucide/svelte": "^0.542.0"
+    "@lucide/svelte": "^0.542.0",
+    "@webext-core/messaging": "^2.3.0"
   }
 }

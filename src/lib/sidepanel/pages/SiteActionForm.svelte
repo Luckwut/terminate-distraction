@@ -16,14 +16,17 @@
 
     let { id }: Props = $props();
 
-    $inspect(ruleFormStore.currentRule);
-
     function getSiteData() {
         const snapshotRule = $state.snapshot(ruleFormStore.currentRule);
         return snapshotRule.sites.find((r) => r.id === id)!;
     }
 
+    function hasBlockPage(site: Site) {
+        return site.actions.some((action) => action.type === "BLOCK_PAGE");
+    }
+
     let site = $state<Site>(getSiteData());
+    let blockedToggle = $state(hasBlockPage(site));
 
     function navigateToRuleForm() {
         router.pop();
@@ -34,6 +37,22 @@
             (s) => s.id !== id,
         );
         ruleFormStore.currentRule.sites = updatedSites;
+        navigateToRuleForm();
+    }
+
+    function handleSave() {
+        if (blockedToggle && !hasBlockPage(site)) {
+            site.actions.push({
+                id: crypto.randomUUID(),
+                type: "BLOCK_PAGE",
+            });
+        } else {
+            site.actions = site.actions.filter((a) => a.type !== "BLOCK_PAGE");
+        }
+
+        ruleFormStore.currentRule.sites = ruleFormStore.currentRule.sites.map(
+            (s) => (s.id === site.id ? { ...site } : s),
+        );
         navigateToRuleForm();
     }
 </script>
@@ -81,6 +100,7 @@
                     type="checkbox"
                     class="toggle toggle-primary toggle-sm checked:bg-primary checked:text-primary-content"
                     title="Block this site"
+                    bind:checked={blockedToggle}
                 />
             </div>
 
@@ -161,7 +181,10 @@
 </div>
 
 <div class="flex justify-center items-center p-2 border-t border-t-base-100">
-    <button class="btn btn-sm btn-soft btn-primary btn-wide rounded-full">
+    <button
+        class="btn btn-sm btn-soft btn-primary btn-wide rounded-full"
+        onclick={handleSave}
+    >
         <span class="text-primary-content">Save</span>
     </button>
 </div>

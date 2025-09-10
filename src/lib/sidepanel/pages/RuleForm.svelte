@@ -12,8 +12,6 @@
 
   let { id = null }: Props = $props();
 
-  $inspect(ruleFormStore.currentRule);
-
   onMount(async () => {
     if (id === null) {
       ruleFormStore.reset();

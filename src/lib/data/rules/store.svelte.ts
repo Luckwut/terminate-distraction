@@ -24,9 +24,12 @@ export const rulesStore = {
         return data ?? [];
     },
 
+    get nonProxyRules(): Rule[] {
+        return $state.snapshot(data) ?? [];
+    },
+
     async load() {
         // If `loader` still running, reuse it
-        if (data !== null) return Promise.resolve();
         if (loader) return loader;
 
         // otherwise, start loading
@@ -58,3 +61,5 @@ export async function initPresetData() {
         await setRuleStorage(presetData);
     }
 }
+
+export { rulesStorage };

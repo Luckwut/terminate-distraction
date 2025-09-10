@@ -8,7 +8,7 @@
   import { router } from "@/lib/sidepanel/router.svelte";
   import { rulesStore } from "@/lib/data/rules/store.svelte";
   import { ruleFormStore } from "../ruleFormStore.svelte";
-  import type { Rule } from "@/lib/data/rules/types";
+  import type { Rule, Site } from "@/lib/data/rules/types";
 
   interface Props {
     id?: string | null;
@@ -46,18 +46,21 @@
     });
   }
 
+  function hasBlockPage(site: Site) {
+    return site.actions.some((action) => action.type === "BLOCK_PAGE");
+  }
+
+  function countHiddenElementAction(site: Site) {
+    return site.actions.filter((action) => action.type === "HIDE_ELEMENT")
+      .length;
+  }
+
   function handleAddSite() {
     if (!siteUrlInput.trim()) return;
     ruleFormStore.currentRule.sites.push({
       id: crypto.randomUUID(),
       siteUrl: siteUrlInput,
-      actions: [
-        // TODO: block page as default placeholder for now
-        {
-          id: crypto.randomUUID(),
-          type: "BLOCK_PAGE",
-        },
-      ],
+      actions: [],
     });
     siteUrlInput = "";
   }
@@ -297,16 +300,16 @@
     </div>
 
     {#if ruleFormStore.currentRule.sites.length !== 0}
+      {#snippet noActions()}
+        <span class="badge badge-xs badge-soft badge-warning">No Action</span>
+      {/snippet}
+
       {#snippet blockedSiteIndicator()}
-        <span class="badge badge-xs badge-soft badge-error">
-          <Lock size={8} />
-        </span>
+        <span class="badge badge-xs badge-soft badge-error">Blocked</span>
       {/snippet}
 
       {#snippet hiddenElementIndicator(amount: number)}
-        <span class="badge badge-xs badge-soft">
-          {amount}
-        </span>
+        <span class="badge badge-xs badge-soft">{amount} Hidden</span>
       {/snippet}
 
       <div class="flex flex-col gap-2 p-3 bg-base-200 rounded text-xs">
@@ -318,13 +321,12 @@
             >
               {site.siteUrl}
             </button>
-            {#if site.actions.some((action) => action.type === "BLOCK_PAGE")}
+            {#if site.actions.length === 0}
+              {@render noActions()}
+            {:else if hasBlockPage(site)}
               {@render blockedSiteIndicator()}
             {:else}
-              {@render hiddenElementIndicator(
-                site.actions.filter((action) => action.type === "HIDE_ELEMENT")
-                  .length,
-              )}
+              {@render hiddenElementIndicator(countHiddenElementAction(site))}
             {/if}
           </div>
         {/each}

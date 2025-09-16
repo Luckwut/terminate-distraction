@@ -4,7 +4,7 @@
   import { rulesStore } from "@/lib/data/rules/store.svelte";
   import { ruleFormStore } from "@/lib/sidepanel/ruleFormStore.svelte";
   import type { Rule, Site } from "@/lib/data/rules/types";
-  import { blur, slide } from "svelte/transition";
+  import { slide } from "svelte/transition";
   import { sendMessage } from "@/lib/messaging";
 
   interface Props {
@@ -31,8 +31,8 @@
     }
   });
 
-  let siteUrlInputRef: HTMLInputElement | null;
   let isSiteUrlInvalid = $state(false);
+  let siteUrlInvalidMessage = $state("");
   let urlInvalidTimeout: ReturnType<typeof setTimeout> | null = $state(null);
 
   let ruleNameInputRef: HTMLInputElement | null;
@@ -85,46 +85,69 @@
       .length;
   }
 
-  function checkUrlValidity(siteUrl: string) {
-    const url = siteUrl.trim();
+  function normalizeUrl(siteUrl: string): string {
+    let url = siteUrl.trim();
 
-    if (!url) return false;
-    if (/\s/.test(url)) return false;
+    if (!url) throw new Error("URL cannot be empty.");
+    if (/\s/.test(url)) throw new Error("URL cannot contain whitespace.");
 
-    const pattern = /^(\*\.)?([\w-]+\.)+[a-zA-Z]{2,}(\/[\w.*-]*)*$/;
+    const domainPattern = /^(\*\.)?([\w-]+\.)+[a-zA-Z]{2,}$/;
 
-    return pattern.test(url);
+    const parts = url.split("/", 2);
+    const domain = parts[0];
+    let path = url.slice(domain.length);
+
+    if (!domainPattern.test(domain)) {
+      throw new Error(
+        "Invalid domain format. Example: 'example.com' or '*.example.com'.",
+      );
+    }
+
+    if (!path) {
+      path = "/";
+    }
+
+    if (path !== "/") {
+      if (!path.endsWith("*")) {
+        path += "*";
+      }
+    }
+
+    return domain + path;
   }
 
-  function handleUrlInvalid() {
+  function handleUrlInvalid(errorMessage: string) {
     if (urlInvalidTimeout) {
       clearTimeout(urlInvalidTimeout);
     }
 
-    siteUrlInputRef?.classList.add("input-error");
     isSiteUrlInvalid = true;
-
+    siteUrlInvalidMessage = errorMessage;
+    
     urlInvalidTimeout = setTimeout(() => {
-      siteUrlInputRef?.classList.remove("input-error");
       isSiteUrlInvalid = false;
       urlInvalidTimeout = null;
-    }, 1000);
+      siteUrlInvalidMessage = "";
+    }, 2000);
   }
 
   function handleAddSite() {
-    const url = removeProtocol(siteUrlInput);
+    try {
+      const url = normalizeUrl(removeProtocol(siteUrlInput));
 
-    if (!checkUrlValidity(url)) {
-      handleUrlInvalid();
-      return;
+      ruleFormStore.currentRule.sites.push({
+        id: crypto.randomUUID(),
+        siteUrl: url,
+        actions: [],
+      });
+      siteUrlInput = "";
+    } catch (error) {
+      if (error instanceof Error) {
+        handleUrlInvalid(error.message);
+      } else {
+        handleUrlInvalid("An unexpected error occurred.");
+      }
     }
-
-    ruleFormStore.currentRule.sites.push({
-      id: crypto.randomUUID(),
-      siteUrl: url,
-      actions: [],
-    });
-    siteUrlInput = "";
   }
 
   function handleDelete() {
@@ -353,45 +376,32 @@
       />
     </span>
 
-    <div class="flex flex-col gap-2">
-      <label class="input input-sm w-full">
+    <div class="flex flex-col">
+      <label class="input input-sm w-full {isSiteUrlInvalid ? 'input-error' : ''}">
         <span>https://</span>
         <input
           type="text"
           class="grow"
           placeholder="www.youtube.com/shorts/*"
           bind:value={siteUrlInput}
-          bind:this={siteUrlInputRef}
         />
       </label>
-      <div class="flex gap-2">
+      {#if isSiteUrlInvalid}
+        <span class="text-error mt-1" transition:slide>{siteUrlInvalidMessage}</span>
+      {/if}
+      <div class="flex gap-2 mt-2">
         <button
           class="flex-1 btn btn-secondary btn-soft btn-sm rounded-lg"
           onclick={fetchUrl}
         >
           Current URL
         </button>
-        <div class="relative flex-1 overflow-hidden">
-          {#key isSiteUrlInvalid}
-            <div class="absolute inset-0 flex" transition:blur>
-              {#if isSiteUrlInvalid}
-                <button
-                  class="flex-1 btn btn-error btn-soft btn-sm rounded-lg"
-                  onclick={handleAddSite}
-                >
-                  Invalid URL format
-                </button>
-              {:else}
-                <button
-                  class="flex-1 btn btn-primary btn-soft btn-sm rounded-lg"
-                  onclick={handleAddSite}
-                >
-                  Add
-                </button>
-              {/if}
-            </div>
-          {/key}
-        </div>
+        <button
+          class="flex-1 btn {isSiteUrlInvalid ? 'btn-error' : 'btn-primary'} btn-soft btn-sm rounded-lg"
+          onclick={handleAddSite}
+        >
+          Add
+        </button>
       </div>
     </div>
 

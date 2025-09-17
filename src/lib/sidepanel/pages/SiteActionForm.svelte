@@ -7,8 +7,12 @@
         Trash,
     } from "@lucide/svelte";
     import { router } from "@/lib/sidepanel/router.svelte";
-    import type { Site } from "@/lib/data/rules/types";
+    import type {
+        HideElementAction,
+        Site,
+    } from "@/lib/data/rules/types";
     import { ruleFormStore } from "@/lib/sidepanel/ruleFormStore.svelte";
+    import { slide } from "svelte/transition";
 
     interface Props {
         id: string;
@@ -27,9 +31,66 @@
 
     let site = $state<Site>(getSiteData());
     let blockedToggle = $state(hasBlockPage(site));
+    let hideElementInput = $state({
+        id: "",
+        label: "",
+        selector: "",
+    });
+    let trackEmptyInputs = $state({
+        siteUrl: false,
+        label: false,
+        selector: false,
+    });
 
     function navigateToRuleForm() {
         router.pop();
+    }
+
+    function handleDeleteAction(id: string) {
+        const updatedActions = site.actions.filter((a) => a.id !== id);
+        site.actions = updatedActions;
+    }
+
+    function handleEditAction(action: HideElementAction) {
+        hideElementInput.id = action.id;
+        hideElementInput.label = action.label;
+        hideElementInput.selector = action.selector;
+    }
+
+    function handleSaveAction() {
+        if (hideElementInput.label.trim() === "") trackEmptyInputs.label = true;
+        if (hideElementInput.selector.trim() === "")
+            trackEmptyInputs.selector = true;
+
+        if (
+            hideElementInput.label.trim() === "" ||
+            hideElementInput.selector.trim() === ""
+        ) {
+            return;
+        }
+
+        const hideElement: HideElementAction = {
+            id: hideElementInput.id ? hideElementInput.id : crypto.randomUUID(),
+            type: "HIDE_ELEMENT",
+            label: hideElementInput.label,
+            selector: hideElementInput.selector,
+        };
+
+        const actionExists = site.actions.some(
+            (a) => a.id === hideElementInput.id,
+        );
+
+        if (actionExists) {
+            site.actions = site.actions.map((a) =>
+                a.id === hideElementInput.id ? { ...hideElement } : a,
+            );
+        } else {
+            site.actions.push(hideElement);
+        }
+
+        hideElementInput.id = "";
+        hideElementInput.label = "";
+        hideElementInput.selector = "";
     }
 
     function handleRemoveSite() {
@@ -40,7 +101,12 @@
         navigateToRuleForm();
     }
 
-    function handleSave() {
+    function handleSaveSite() {
+        if (site.siteUrl.trim() === "") {
+            trackEmptyInputs.siteUrl = true;
+            return;
+        }
+
         if (blockedToggle && !hasBlockPage(site)) {
             site.actions.push({
                 id: crypto.randomUUID(),
@@ -77,15 +143,27 @@
         <div class="flex flex-col gap-2">
             <div class="flex flex-col gap-1 mb-2">
                 <span>Site URL</span>
-                <label class="input input-sm w-full">
+                <label
+                    class="input input-sm w-full {trackEmptyInputs.siteUrl
+                        ? 'input-error'
+                        : ''}"
+                >
                     <span>https://</span>
                     <input
                         type="text"
                         class="grow"
                         placeholder="www.youtube.com/shorts/*"
+                        oninput={() => {
+                            trackEmptyInputs.siteUrl = false;
+                        }}
                         bind:value={site.siteUrl}
                     />
                 </label>
+                {#if trackEmptyInputs.siteUrl}
+                    <span class="text-error text-xs" transition:slide>
+                        This field cannot be left empty
+                    </span>
+                {/if}
             </div>
 
             <div class="flex items-center justify-between">
@@ -131,17 +209,44 @@
         <div class="flex flex-col gap-2">
             <div class="flex flex-col gap-1">
                 <span>Label</span>
-                <input type="text" class="input input-sm" />
+                <input
+                    type="text"
+                    class="input input-sm {trackEmptyInputs.label
+                        ? 'input-error'
+                        : ''}"
+                    oninput={() => {
+                        trackEmptyInputs.label = false;
+                    }}
+                    bind:value={hideElementInput.label}
+                />
+                {#if trackEmptyInputs.label}
+                    <span class="text-error text-xs" transition:slide>
+                        This field cannot be left empty
+                    </span>
+                {/if}
             </div>
             <div class="flex flex-col gap-1">
                 <span>Selector</span>
-                <textarea class="textarea textarea-xs font-mono min-h-16"
+                <textarea
+                    class="textarea textarea-xs font-mono min-h-16 {trackEmptyInputs.selector
+                        ? 'textarea-error'
+                        : ''}"
+                    oninput={() => {
+                        trackEmptyInputs.selector = false;
+                    }}
+                    bind:value={hideElementInput.selector}
                 ></textarea>
+                {#if trackEmptyInputs.selector}
+                    <span class="text-error text-xs" transition:slide>
+                        This field cannot be left empty
+                    </span>
+                {/if}
             </div>
             <div class="flex gap-2">
                 <button
                     class="flex-1 btn btn-primary btn-soft btn-sm rounded-lg"
                     title="Add element into the 'Hide Element' list"
+                    onclick={handleSaveAction}
                 >
                     Add
                 </button>
@@ -154,28 +259,36 @@
             </div>
         </div>
 
-        <div class="flex flex-col gap-2 p-3 bg-base-200 rounded text-sm mt-2">
-            <div class="flex justify-between items-center gap-2 group">
-                <span class="flex-1 break-all group-hover:drop-shadow-md"
-                    >Youtube Reels</span
-                >
-                <span
-                    class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                    <button
-                        class="cursor-pointer hover:text-primary hover:drop-shadow-lg hover:drop-shadow-primary"
-                        title="Edit"
+        <div class="flex flex-col p-2 bg-base-200 rounded text-sm mt-2">
+            {#each site.actions as action}
+                {#if action.type === "HIDE_ELEMENT"}
+                    <div
+                        class="flex justify-between items-center gap-2 group cursor-default hover:bg-base-100 p-2 rounded"
                     >
-                        <Pencil size={16} />
-                    </button>
-                    <button
-                        class="cursor-pointer text-error hover:text-error hover:drop-shadow-lg hover:drop-shadow-error"
-                        title="Delete"
-                    >
-                        <Trash size={16} />
-                    </button>
-                </span>
-            </div>
+                        <span class="flex-1 break-all">
+                            {action.label}
+                        </span>
+                        <span
+                            class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                            <button
+                                class="cursor-pointer hover:text-primary hover:drop-shadow-lg hover:drop-shadow-primary"
+                                title="Edit"
+                                onclick={() => handleEditAction(action)}
+                            >
+                                <Pencil size={16} />
+                            </button>
+                            <button
+                                class="cursor-pointer text-error hover:text-error hover:drop-shadow-lg hover:drop-shadow-error"
+                                title="Delete"
+                                onclick={() => handleDeleteAction(action.id)}
+                            >
+                                <Trash size={16} />
+                            </button>
+                        </span>
+                    </div>
+                {/if}
+            {/each}
         </div>
     </div>
 </div>
@@ -183,7 +296,7 @@
 <div class="flex justify-center items-center p-2 border-t border-t-base-100">
     <button
         class="btn btn-sm btn-soft btn-primary btn-wide rounded-full"
-        onclick={handleSave}
+        onclick={handleSaveSite}
     >
         <span class="text-primary-content">Save</span>
     </button>

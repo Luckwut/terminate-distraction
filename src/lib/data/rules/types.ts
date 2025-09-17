@@ -1,11 +1,11 @@
-interface HideElementAction {
+export interface HideElementAction {
   id: string;
   type: "HIDE_ELEMENT";
   label: string;
   selector: string;
 }
 
-interface BlockPageAction {
+export interface BlockPageAction {
   id: string;
   type: "BLOCK_PAGE";
 }

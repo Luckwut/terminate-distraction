@@ -23,7 +23,7 @@
 
     const displayButton = $derived.by(() => {
         if (!p.enabled) {
-            return buttonDisabled;
+            return null;
         }
 
         if (p.unlockCount >= p.dailyLimit && hasDailyLimit) {
@@ -49,6 +49,14 @@
         return "text-green-600";
     });
 
+    const displayStatusBadge = $derived.by(() => {
+        if (!p.enabled) {
+            return badgeDisabled;
+        }
+
+        return badgeActive;
+    });
+
     function navigateToRuleForm() {
         router.push({
             name: "ruleForm",
@@ -65,9 +73,9 @@
 
 {#snippet buttonUnlockedTimer()}
     <div
-        class="btn btn-xs btn-soft btn-primary rounded-full px-4 pointer-events-none tabular-nums"
+        class="btn btn-xs btn-soft btn-accent rounded-full px-4 pointer-events-none tabular-nums"
     >
-        Unlocked 10:00
+        10:00
     </div>
 {/snippet}
 
@@ -75,7 +83,7 @@
     <div
         class="btn btn-xs btn-soft btn-warning rounded-full px-4 pointer-events-none tabular-nums"
     >
-        Cooldown 10:00
+        10:00
     </div>
 {/snippet}
 
@@ -87,8 +95,24 @@
     </button>
 {/snippet}
 
-{#snippet buttonDisabled()}
-    <button class="btn btn-xs rounded-full px-4" disabled>Disabled</button>
+{#snippet badgeActive()}
+    <span class="badge badge-xs badge-primary badge-soft">Active</span>
+{/snippet}
+
+{#snippet badgeUnlocked()}
+    <span class="badge badge-xs badge-accent badge-soft">Unlocked</span>
+{/snippet}
+
+{#snippet badgeCooldown()}
+    <span class="badge badge-xs badge-warning badge-soft">Cooldown</span>
+{/snippet}
+
+{#snippet badgeLocked()}
+    <span class="badge badge-xs badge-error badge-soft">Locked</span>
+{/snippet}
+
+{#snippet badgeDisabled()}
+    <span class="badge badge-xs badge-soft">Disabled</span>
 {/snippet}
 
 <div
@@ -103,12 +127,13 @@
                 {p.name}
             </span>
         </span>
-        {@render displayButton()}
+        {@render displayButton?.()}
     </div>
     <span class="border-t border-base-content/10"></span>
     <div class="flex flex-1 justify-between items-center text-xs">
         <span class="flex gap-1 items-center">
-            <span class="text-base-content/35">AREA TODO</span>
+            <span class="text-base-content/35">Status:</span>
+            {@render displayStatusBadge()}
         </span>
         <span class="flex gap-2 items-center">
             <span class="text-base-content/35">0 days streak</span>

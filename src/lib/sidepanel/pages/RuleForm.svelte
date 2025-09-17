@@ -31,12 +31,11 @@
     }
   });
 
+  let siteUrlInput = $state("");
   let isSiteUrlInvalid = $state(false);
   let siteUrlInvalidMessage = $state("");
-  let urlInvalidTimeout: ReturnType<typeof setTimeout> | null = $state(null);
 
-  let ruleNameInputRef: HTMLInputElement | null;
-  let siteUrlInput = $state("");
+  let isRuleNameEmpty = $state(false);
 
   let isAdditionalOptionsOpen = $state(true);
   const advancedOptionChevronClass = $derived(
@@ -117,18 +116,8 @@
   }
 
   function handleUrlInvalid(errorMessage: string) {
-    if (urlInvalidTimeout) {
-      clearTimeout(urlInvalidTimeout);
-    }
-
     isSiteUrlInvalid = true;
     siteUrlInvalidMessage = errorMessage;
-    
-    urlInvalidTimeout = setTimeout(() => {
-      isSiteUrlInvalid = false;
-      urlInvalidTimeout = null;
-      siteUrlInvalidMessage = "";
-    }, 2000);
   }
 
   function handleAddSite() {
@@ -161,8 +150,7 @@
     const rules = rulesStore.rules;
 
     if (!rule.name.trim()) {
-      ruleNameInputRef!.placeholder = "Name cannot be empty!";
-      ruleNameInputRef!.classList.add("input-error");
+      isRuleNameEmpty = true;
       return;
     }
     rule.name = rule.name.trim();
@@ -201,14 +189,23 @@
     <h1 class="text-lg">General</h1>
 
     <div class="flex flex-col gap-3">
-      <div class="flex items-center justify-between">
-        <span>Rule Name</span>
-        <input
-          type="text"
-          class="input input-sm w-52"
-          bind:value={ruleFormStore.currentRule.name}
-          bind:this={ruleNameInputRef}
-        />
+      <div class="flex flex-col">
+        <div class="flex items-center justify-between relative">
+          <span>Rule Name</span>
+          <input
+            type="text"
+            class="input input-sm w-52 {isRuleNameEmpty ? 'input-error' : ''}"
+            oninput={() => {
+              isRuleNameEmpty = false;
+            }}
+            bind:value={ruleFormStore.currentRule.name}
+          />
+        </div>
+        {#if isRuleNameEmpty}
+          <span class="text-end mt-1 text-error" transition:slide>
+            This field cannot be left empty
+          </span>
+        {/if}
       </div>
 
       <div class="flex items-center justify-between">
@@ -377,17 +374,24 @@
     </span>
 
     <div class="flex flex-col">
-      <label class="input input-sm w-full {isSiteUrlInvalid ? 'input-error' : ''}">
+      <label
+        class="input input-sm w-full {isSiteUrlInvalid ? 'input-error' : ''}"
+      >
         <span>https://</span>
         <input
           type="text"
           class="grow"
           placeholder="www.youtube.com/shorts/*"
+          oninput={() => {
+            isSiteUrlInvalid = false;
+          }}
           bind:value={siteUrlInput}
         />
       </label>
       {#if isSiteUrlInvalid}
-        <span class="text-error mt-1" transition:slide>{siteUrlInvalidMessage}</span>
+        <span class="text-error mt-1" transition:slide>
+          {siteUrlInvalidMessage}
+        </span>
       {/if}
       <div class="flex gap-2 mt-2">
         <button
@@ -397,7 +401,7 @@
           Current URL
         </button>
         <button
-          class="flex-1 btn {isSiteUrlInvalid ? 'btn-error' : 'btn-primary'} btn-soft btn-sm rounded-lg"
+          class="flex-1 btn btn-primary btn-soft btn-sm rounded-lg"
           onclick={handleAddSite}
         >
           Add

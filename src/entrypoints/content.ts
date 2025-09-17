@@ -1,31 +1,47 @@
-// import { rulesStore } from "@/lib/ruleStore.svelte";
+import { rulesStorage } from "@/lib/data/rules/store.svelte";
+import { sendMessage } from "@/lib/messaging";
+
+const STYLE_ID = "terminate-distraction-ext-element-hider-styles";
+
+function applyCssHiding(selectors: string[]) {
+  const existingStyle = document.getElementById(STYLE_ID);
+
+  if (selectors.length === 0) {
+    if (existingStyle) {
+      existingStyle.remove();
+    }
+    return;
+  }
+
+  const cssRule = `${selectors.join(", ")} { display: none !important; }`;
+
+  if (existingStyle) {
+    existingStyle.textContent = cssRule;
+  } else {
+    const style = document.createElement("style");
+    style.id = STYLE_ID;
+    style.textContent = cssRule;
+    document.head.appendChild(style);
+  }
+}
+
+async function runHidingLogic(url: string) {
+  const selectorsToHide = await sendMessage("getHideRulesSelectors", { url });
+  applyCssHiding(selectorsToHide);
+}
 
 export default defineContentScript({
   matches: ['<all_urls>'],
-  async main(ctx) {
-    // await rulesStore.load();
+  runAt: "document_idle",
+  main(ctx) {
+    runHidingLogic(window.location.href);
+    ctx.addEventListener(window, "wxt:locationchange", (event) => {
+      console.log(`SPA Navigation detected. New URL: ${event.newUrl}`);
+      runHidingLogic(event.newUrl.toString());
+    });
 
-    // const rules = rulesStore.rules ?? [];
-    // const currentUrl = window.location.href;
-
-    // console.log(currentUrl);
-
-    // if (!rules || rules.length === 0) {
-    //   return;
-    // }
-
-    // for (const rule of rules) {
-    //   if (!rule.enabled) continue;
-
-    //   for (const site of rule.sites) {
-    //     const pattern = new MatchPattern(`*://${site.siteUrl}`);
-        
-    //     if (pattern.includes(currentUrl)) {
-    //         console.log(`MATCHED: ${currentUrl} matches rule "${rule.name}" on site pattern "${site.siteUrl}"`);
-    //         document.body.innerHTML = '<h1>Blocked</h1>';
-    //         return; 
-    //       }
-    //   }
-    // }
+    rulesStorage.watch(async () => {
+      runHidingLogic(window.location.href);
+    });
   },
 });

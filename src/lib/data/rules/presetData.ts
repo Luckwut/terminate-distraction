@@ -15,8 +15,8 @@ export const presetData: Rule[] = [
     sites: [
       {
         id: crypto.randomUUID(),
-        siteUrl: "*.youtube.com/*",
-        actions: [
+        siteUrl: "*.youtube.com/",
+        actions: [  
           {
             id: crypto.randomUUID(),
             type: "HIDE_ELEMENT",
@@ -27,7 +27,7 @@ export const presetData: Rule[] = [
       },
       {
         id: crypto.randomUUID(),
-        siteUrl: "*.youtube.com/watch?v=*",
+        siteUrl: "*.youtube.com/watch*",
         actions: [
           {
             id: crypto.randomUUID(),
@@ -53,19 +53,19 @@ export const presetData: Rule[] = [
     sites: [
       {
         id: crypto.randomUUID(),
-        siteUrl: "*.youtube.com/*",
+        siteUrl: "*.youtube.com/",
         actions: [
           {
             id: crypto.randomUUID(),
             type: "HIDE_ELEMENT",
-            label: "Homepage feed shorts section",
-            selector: "#contents > ytd-rich-section-renderer:nth-child(12)"
-          }
+            label: "Homepage shorts section",
+            selector: "#content > ytd-rich-shelf-renderer"
+          },
         ]
       },
       {
         id: crypto.randomUUID(),
-        siteUrl: "*.youtube.com/watch?v=*",
+        siteUrl: "*.youtube.com/watch*",
         actions: [
           {
             id: crypto.randomUUID(),
@@ -101,7 +101,7 @@ export const presetData: Rule[] = [
     sites: [
       {
         id: crypto.randomUUID(),
-        siteUrl: "www.reddit.com/*",
+        siteUrl: "www.reddit.com/",
         actions: [
           {
             id: crypto.randomUUID(),

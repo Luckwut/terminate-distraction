@@ -84,6 +84,26 @@ export default defineBackground(() => {
     return tabs[0]?.url || "";
   });
 
+  onMessage("getHideRulesSelectors", async ({ data: { url } }) => {
+    await rulesStore.load();
+    const rules = rulesStore.nonProxyRules;
+
+    const selectorsToHide: string[] = [];
+
+    rules
+      .filter(rule => rule.enabled)
+      .flatMap(rule => rule.sites)
+      .filter(site => new MatchPattern("*://" + site.siteUrl).includes(url))
+      .flatMap(site => site.actions)
+      .forEach(action => {
+        if (action.type === "HIDE_ELEMENT") {
+          selectorsToHide.push(action.selector);
+        }
+      });
+
+    return selectorsToHide;
+  });
+
   browser.runtime.onInstalled.addListener(async (details) => {
     if (details.reason === "install") {
       await initPresetData();

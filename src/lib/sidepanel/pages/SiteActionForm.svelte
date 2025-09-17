@@ -4,13 +4,11 @@
         CircleQuestionMark,
         MousePointerClick,
         Pencil,
+        PencilOff,
         Trash,
     } from "@lucide/svelte";
     import { router } from "@/lib/sidepanel/router.svelte";
-    import type {
-        HideElementAction,
-        Site,
-    } from "@/lib/data/rules/types";
+    import type { HideElementAction, Site } from "@/lib/data/rules/types";
     import { ruleFormStore } from "@/lib/sidepanel/ruleFormStore.svelte";
     import { slide } from "svelte/transition";
 
@@ -55,6 +53,12 @@
         hideElementInput.id = action.id;
         hideElementInput.label = action.label;
         hideElementInput.selector = action.selector;
+    }
+
+    function handleCancelEditAction() {
+        hideElementInput.id = "";
+        hideElementInput.label = "";
+        hideElementInput.selector = "";
     }
 
     function handleSaveAction() {
@@ -248,7 +252,7 @@
                     title="Add element into the 'Hide Element' list"
                     onclick={handleSaveAction}
                 >
-                    Add
+                    {hideElementInput.id ? "Update" : "Add"}
                 </button>
                 <button
                     class="btn btn-secondary btn-soft btn-sm rounded-lg"
@@ -268,24 +272,35 @@
                         <span class="flex-1 break-all">
                             {action.label}
                         </span>
-                        <span
-                            class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
+                        {#if hideElementInput.id === action.id}
                             <button
-                                class="cursor-pointer hover:text-primary hover:drop-shadow-lg hover:drop-shadow-primary"
+                                class="cursor-pointer text-primary drop-shadow-lg drop-shadow-primary"
                                 title="Edit"
-                                onclick={() => handleEditAction(action)}
+                                onclick={handleCancelEditAction}
                             >
-                                <Pencil size={16} />
+                                <PencilOff size={16} />
                             </button>
-                            <button
-                                class="cursor-pointer text-error hover:text-error hover:drop-shadow-lg hover:drop-shadow-error"
-                                title="Delete"
-                                onclick={() => handleDeleteAction(action.id)}
+                        {:else}
+                            <span
+                                class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity"
                             >
-                                <Trash size={16} />
-                            </button>
-                        </span>
+                                <button
+                                    class="cursor-pointer hover:text-primary hover:drop-shadow-lg hover:drop-shadow-primary"
+                                    title="Cancel Edit"
+                                    onclick={() => handleEditAction(action)}
+                                >
+                                    <Pencil size={16} />
+                                </button>
+                                <button
+                                    class="cursor-pointer text-error hover:text-error hover:drop-shadow-lg hover:drop-shadow-error"
+                                    title="Delete"
+                                    onclick={() =>
+                                        handleDeleteAction(action.id)}
+                                >
+                                    <Trash size={16} />
+                                </button>
+                            </span>
+                        {/if}
                     </div>
                 {/if}
             {/each}

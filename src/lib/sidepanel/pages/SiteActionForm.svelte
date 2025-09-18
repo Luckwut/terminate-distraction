@@ -11,6 +11,7 @@
     import type { HideElementAction, Site } from "@/lib/data/rules/types";
     import { ruleFormStore } from "@/lib/sidepanel/ruleFormStore.svelte";
     import { slide } from "svelte/transition";
+    import { onMessage, sendMessage } from "@/lib/messaging";
 
     interface Props {
         id: string;
@@ -39,6 +40,41 @@
         label: false,
         selector: false,
     });
+    let isSelectorMode = $state(false);
+    let currentUrl = $state("");
+    let showWarning = $state(false);
+    const rawSiteUrl = $state.snapshot(site.siteUrl);
+    let currentTabId = $state<number | undefined>(undefined);
+
+    onMount(async () => {
+        currentTabId = await sendMessage("getCurrentTabId");
+        currentUrl = await sendMessage("getCurrentSiteUrl");
+        const pattern = new MatchPattern(`*://${site.siteUrl}`);
+        showWarning = !pattern.includes(currentUrl);
+    });
+
+    onDestroy(async () => {
+        await sendMessage("disableSelectorMode", undefined, currentTabId);
+    });
+
+    $effect(() => {
+        const removeListener = onMessage("selectElementSelector", (message) => {
+            hideElementInput.selector = message.data;
+            isSelectorMode = false;
+            sendMessage("disableSelectorMode", undefined, currentTabId);
+        });
+
+        return removeListener;
+    });
+
+    async function toggleSelectorMode() {
+        isSelectorMode = !isSelectorMode;
+        if (isSelectorMode) {
+            await sendMessage("enableSelectorMode", undefined, currentTabId);
+        } else {
+            await sendMessage("disableSelectorMode", undefined, currentTabId);
+        }
+    }
 
     function navigateToRuleForm() {
         router.pop();
@@ -168,6 +204,12 @@
                         This field cannot be left empty
                     </span>
                 {/if}
+                {#if showWarning}
+                    <span class="text-warning text-xs " transition:slide>
+                        Warning: Current page (<span class="break-words">{currentUrl}</span>) does not match the site
+                        pattern (<span class="break-words">{rawSiteUrl}</span>). Selectors may not apply.
+                    </span>
+                {/if}
             </div>
 
             <div class="flex items-center justify-between">
@@ -255,8 +297,9 @@
                     {hideElementInput.id ? "Update" : "Add"}
                 </button>
                 <button
-                    class="btn btn-secondary btn-soft btn-sm rounded-lg"
+                    class="btn btn-secondary {isSelectorMode ? '' : 'btn-soft'} btn-sm rounded-lg"
                     title="Select an element from the current website"
+                    onclick={toggleSelectorMode}
                 >
                     <MousePointerClick size={20} />
                 </button>

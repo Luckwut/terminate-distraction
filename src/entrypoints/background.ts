@@ -104,6 +104,14 @@ export default defineBackground(() => {
     return selectorsToHide;
   });
 
+  onMessage("getCurrentTabId", async () => {
+    const tabs = await browser.tabs.query({
+      active: true,
+      currentWindow: true,
+    });
+    return tabs[0]?.id;
+  });
+
   browser.runtime.onInstalled.addListener(async (details) => {
     if (details.reason === "install") {
       await initPresetData();

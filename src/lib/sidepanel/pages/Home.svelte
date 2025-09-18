@@ -4,11 +4,13 @@
   import { Settings } from "@lucide/svelte";
   import { router } from "@/lib/sidepanel/router.svelte";
   import { rulesStore } from "@/lib/data/rules/store.svelte";
+  import { ruleFormStore } from "@/lib/sidepanel/ruleFormStore.svelte";
 
   const loadPromise = rulesStore.load();
   const rules = $derived(rulesStore.rules);
 
   function navigateToRuleForm() {
+    ruleFormStore.reset();
     router.push({
       name: "ruleForm",
       params: {},

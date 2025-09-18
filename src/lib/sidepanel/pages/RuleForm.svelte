@@ -14,19 +14,16 @@
   let { id = null }: Props = $props();
 
   onMount(async () => {
-    if (id === null) {
-      ruleFormStore.reset();
-      return;
-    }
-
     await rulesStore.load();
 
-    if (ruleFormStore.currentRule.id !== id) {
-      const ruleToEdit = rulesStore.rules.find((r) => r.id === id);
-      if (ruleToEdit) {
-        ruleFormStore.setRule(ruleToEdit);
-      } else {
-        router.pop();
+    if (id !== null) {
+      if (ruleFormStore.currentRule.id !== id) {
+        const ruleToEdit = rulesStore.rules.find((r) => r.id === id);
+        if (ruleToEdit) {
+          ruleFormStore.setRule(ruleToEdit);
+        } else {
+          router.pop();
+        }
       }
     }
   });

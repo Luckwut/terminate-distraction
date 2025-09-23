@@ -133,6 +133,8 @@ export default defineContentScript({
     ctx.addEventListener(window, "wxt:locationchange", (event) => {
       console.log(`SPA Navigation detected. New URL: ${event.newUrl}`);
       runHidingLogic(event.newUrl.toString());
+
+      sendMessage("listenUrlChanges");
     });
 
     rulesStorage.watch(async () => {

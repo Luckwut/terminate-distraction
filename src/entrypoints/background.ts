@@ -22,7 +22,7 @@ async function refreshBlockedUrls() {
   patterns = blockedUrls.map(u => new MatchPattern("*://" + u));
 }
 
-async function handleBlock(
+function handleBlock(
   details: Browser.webNavigation.WebNavigationParentedCallbackDetails |
     Browser.webNavigation.WebNavigationTransitionCallbackDetails
 ) {
@@ -30,7 +30,9 @@ async function handleBlock(
 
   for (const p of patterns) {
     if (p.includes(details.url)) {
-      await browser.tabs.goBack(details.tabId);
+      browser.tabs.goBack(details.tabId).catch((err) => {
+        console.log(`Opened in new tab: ${err}`);
+      });
       browser.tabs.update(details.tabId, {
         url: browser.runtime.getURL("/blocked.html")
       });
@@ -110,6 +112,10 @@ export default defineBackground(() => {
       currentWindow: true,
     });
     return tabs[0]?.id;
+  });
+
+  onMessage("listenUrlChanges", async () => {
+    await updateBlockingRules();
   });
 
   browser.runtime.onInstalled.addListener(async (details) => {

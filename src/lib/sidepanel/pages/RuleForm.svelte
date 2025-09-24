@@ -6,6 +6,7 @@
   import type { Rule, Site } from "@/lib/data/rules/types";
   import { slide } from "svelte/transition";
   import { sendMessage } from "@/lib/messaging";
+  import { normalizeUrl, removeProtocol } from "@/lib/helpers/url";
 
   interface Props {
     id?: string | null;
@@ -41,10 +42,6 @@
 
   const isEditMode = $derived(id !== null);
 
-  function removeProtocol(url: string) {
-    return url.replace(/^https?:\/\//, "");
-  }
-
   async function getCurrentSiteUrl(): Promise<string> {
     try {
       return await sendMessage("getCurrentSiteUrl");
@@ -79,37 +76,6 @@
   function countHiddenElementAction(site: Site) {
     return site.actions.filter((action) => action.type === "HIDE_ELEMENT")
       .length;
-  }
-
-  function normalizeUrl(siteUrl: string): string {
-    let url = siteUrl.trim();
-
-    if (!url) throw new Error("URL cannot be empty.");
-    if (/\s/.test(url)) throw new Error("URL cannot contain whitespace.");
-
-    const domainPattern = /^(\*\.)?([\w-]+\.)+[a-zA-Z]{2,}$/;
-
-    const parts = url.split("/", 2);
-    const domain = parts[0];
-    let path = url.slice(domain.length);
-
-    if (!domainPattern.test(domain)) {
-      throw new Error(
-        "Invalid domain format. Example: 'example.com' or '*.example.com'.",
-      );
-    }
-
-    if (!path) {
-      path = "/";
-    }
-
-    if (path !== "/") {
-      if (!path.endsWith("*")) {
-        path += "*";
-      }
-    }
-
-    return domain + path;
   }
 
   function handleUrlInvalid(errorMessage: string) {

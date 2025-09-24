@@ -12,6 +12,7 @@
     import { ruleFormStore } from "@/lib/sidepanel/ruleFormStore.svelte";
     import { slide } from "svelte/transition";
     import { onMessage, sendMessage } from "@/lib/messaging";
+    import { normalizeUrl, removeProtocol } from "@/lib/helpers/url";
 
     interface Props {
         id: string;
@@ -35,11 +36,12 @@
         label: "",
         selector: "",
     });
-    let trackEmptyInputs = $state({
+    let trackErrorInputs = $state({
         siteUrl: false,
         label: false,
         selector: false,
     });
+    let siteUrlInvalidMessage = $state("");
     let isSelectorMode = $state(false);
     let currentUrl = $state("");
     let showWarning = $state(false);
@@ -50,7 +52,8 @@
         currentTabId = await sendMessage("getCurrentTabId");
         currentUrl = await sendMessage("getCurrentSiteUrl");
         const pattern = new MatchPattern(`*://${site.siteUrl}`);
-        showWarning = !pattern.includes(currentUrl);
+        showWarning =
+            !pattern.includes(currentUrl) && !currentUrl.endsWith("*");
     });
 
     onDestroy(async () => {
@@ -76,6 +79,11 @@
         }
     }
 
+    function handleUrlInvalid(errorMessage: string) {
+        trackErrorInputs.siteUrl = true;
+        siteUrlInvalidMessage = errorMessage;
+    }
+
     function navigateToRuleForm() {
         router.pop();
     }
@@ -98,9 +106,9 @@
     }
 
     function handleSaveAction() {
-        if (hideElementInput.label.trim() === "") trackEmptyInputs.label = true;
+        if (hideElementInput.label.trim() === "") trackErrorInputs.label = true;
         if (hideElementInput.selector.trim() === "")
-            trackEmptyInputs.selector = true;
+            trackErrorInputs.selector = true;
 
         if (
             hideElementInput.label.trim() === "" ||
@@ -143,23 +151,37 @@
 
     function handleSaveSite() {
         if (site.siteUrl.trim() === "") {
-            trackEmptyInputs.siteUrl = true;
+            trackErrorInputs.siteUrl = true;
             return;
         }
 
-        if (blockedToggle && !hasBlockPage(site)) {
-            site.actions.push({
-                id: crypto.randomUUID(),
-                type: "BLOCK_PAGE",
-            });
-        } else {
-            site.actions = site.actions.filter((a) => a.type !== "BLOCK_PAGE");
-        }
+        try {
+            const url = normalizeUrl(removeProtocol(site.siteUrl));
+            site.siteUrl = url;
 
-        ruleFormStore.currentRule.sites = ruleFormStore.currentRule.sites.map(
-            (s) => (s.id === site.id ? { ...site } : s),
-        );
-        navigateToRuleForm();
+            if (blockedToggle && !hasBlockPage(site)) {
+                site.actions.push({
+                    id: crypto.randomUUID(),
+                    type: "BLOCK_PAGE",
+                });
+            } else {
+                site.actions = site.actions.filter(
+                    (a) => a.type !== "BLOCK_PAGE",
+                );
+            }
+
+            ruleFormStore.currentRule.sites =
+                ruleFormStore.currentRule.sites.map((s) =>
+                    s.id === site.id ? { ...site } : s,
+                );
+            navigateToRuleForm();
+        } catch (error) {
+            if (error instanceof Error) {
+                handleUrlInvalid(error.message);
+            } else {
+                handleUrlInvalid("An unexpected error occurred.");
+            }
+        }
     }
 </script>
 
@@ -184,7 +206,7 @@
             <div class="flex flex-col gap-1 mb-2">
                 <span>Site URL</span>
                 <label
-                    class="input input-sm w-full {trackEmptyInputs.siteUrl
+                    class="input input-sm w-full {trackErrorInputs.siteUrl
                         ? 'input-error'
                         : ''}"
                 >
@@ -194,20 +216,25 @@
                         class="grow"
                         placeholder="www.youtube.com/shorts/*"
                         oninput={() => {
-                            trackEmptyInputs.siteUrl = false;
+                            trackErrorInputs.siteUrl = false;
                         }}
                         bind:value={site.siteUrl}
                     />
                 </label>
-                {#if trackEmptyInputs.siteUrl}
+                {#if trackErrorInputs.siteUrl}
                     <span class="text-error text-xs" transition:slide>
-                        This field cannot be left empty
+                        {siteUrlInvalidMessage.trim() === ""
+                            ? "This field cannot be left empty"
+                            : siteUrlInvalidMessage}
                     </span>
                 {/if}
                 {#if showWarning}
-                    <span class="text-warning text-xs " transition:slide>
-                        Warning: Current page (<span class="break-words">{currentUrl}</span>) does not match the site
-                        pattern (<span class="break-words">{rawSiteUrl}</span>). Selectors may not apply.
+                    <span
+                        class="text-warning text-xs break-words"
+                        transition:slide
+                    >
+                        Warning: Current page {currentUrl} does not match the site
+                        pattern {rawSiteUrl}. Selectors may not apply.
                     </span>
                 {/if}
             </div>
@@ -257,15 +284,15 @@
                 <span>Label</span>
                 <input
                     type="text"
-                    class="input input-sm {trackEmptyInputs.label
+                    class="input input-sm {trackErrorInputs.label
                         ? 'input-error'
                         : ''}"
                     oninput={() => {
-                        trackEmptyInputs.label = false;
+                        trackErrorInputs.label = false;
                     }}
                     bind:value={hideElementInput.label}
                 />
-                {#if trackEmptyInputs.label}
+                {#if trackErrorInputs.label}
                     <span class="text-error text-xs" transition:slide>
                         This field cannot be left empty
                     </span>
@@ -274,15 +301,15 @@
             <div class="flex flex-col gap-1">
                 <span>Selector</span>
                 <textarea
-                    class="textarea textarea-xs font-mono min-h-16 {trackEmptyInputs.selector
+                    class="textarea textarea-xs font-mono min-h-16 {trackErrorInputs.selector
                         ? 'textarea-error'
                         : ''}"
                     oninput={() => {
-                        trackEmptyInputs.selector = false;
+                        trackErrorInputs.selector = false;
                     }}
                     bind:value={hideElementInput.selector}
                 ></textarea>
-                {#if trackEmptyInputs.selector}
+                {#if trackErrorInputs.selector}
                     <span class="text-error text-xs" transition:slide>
                         This field cannot be left empty
                     </span>
@@ -297,7 +324,9 @@
                     {hideElementInput.id ? "Update" : "Add"}
                 </button>
                 <button
-                    class="btn btn-secondary {isSelectorMode ? '' : 'btn-soft'} btn-sm rounded-lg"
+                    class="btn btn-secondary {isSelectorMode
+                        ? ''
+                        : 'btn-soft'} btn-sm rounded-lg"
                     title="Select an element from the current website"
                     onclick={toggleSelectorMode}
                 >

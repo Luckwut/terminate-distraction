@@ -1,9 +1,9 @@
-import { Rule } from "@/lib/data/rules/types";
+import { Rule } from '@/lib/data/rules/types';
 
 function createEmptyRule(): Rule {
   return {
     id: crypto.randomUUID(),
-    name: "",
+    name: '',
     enabled: true,
     option: {
       dailyLimit: 0,
@@ -27,5 +27,5 @@ export const ruleFormStore = {
   },
   setRule(newRule: Rule) {
     rule = { ...newRule };
-  }
+  },
 };

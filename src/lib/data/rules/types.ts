@@ -1,13 +1,13 @@
 export interface HideElementAction {
   id: string;
-  type: "HIDE_ELEMENT";
+  type: 'HIDE_ELEMENT';
   label: string;
   selector: string;
 }
 
 export interface BlockPageAction {
   id: string;
-  type: "BLOCK_PAGE";
+  type: 'BLOCK_PAGE';
 }
 
 export interface Rule {

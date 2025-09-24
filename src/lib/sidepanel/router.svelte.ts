@@ -5,9 +5,9 @@ type Route =
 
 let routeStack = $state<Route[]>([
   {
-    name: "home",
-    params: {}
-  }
+    name: 'home',
+    params: {},
+  },
 ]);
 let currentRoute = $derived(routeStack[routeStack.length - 1]);
 
@@ -21,4 +21,4 @@ export const router = {
   pop() {
     routeStack.pop();
   },
-}
+};

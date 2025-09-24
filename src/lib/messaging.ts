@@ -1,4 +1,4 @@
-import { defineExtensionMessaging } from "@webext-core/messaging";
+import { defineExtensionMessaging } from '@webext-core/messaging';
 
 interface ProtocolMap {
   getCurrentSiteUrl(): string;
@@ -10,4 +10,5 @@ interface ProtocolMap {
   selectElementSelector(data: string): void;
 }
 
-export const { sendMessage, onMessage } = defineExtensionMessaging<ProtocolMap>();
+export const { sendMessage, onMessage } =
+  defineExtensionMessaging<ProtocolMap>();

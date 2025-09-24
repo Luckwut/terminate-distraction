@@ -1,30 +1,35 @@
-import { initPresetData, rulesStorage, rulesStore } from "@/lib/data/rules/store.svelte";
-import type { Rule } from "@/lib/data/rules/types";
-import { onMessage } from "@/lib/messaging";
-import { MatchPattern } from "wxt/utils/match-patterns";
+import {
+  initPresetData,
+  rulesStorage,
+  rulesStore,
+} from '@/lib/data/rules/store.svelte';
+import type { Rule } from '@/lib/data/rules/types';
+import { onMessage } from '@/lib/messaging';
+import { MatchPattern } from 'wxt/utils/match-patterns';
 
 let patterns: MatchPattern[] = [];
 let currentUrlFilters: Browser.events.UrlFilter[] = [];
 
 function getBlockedSites(rules: Rule[]) {
   return rules
-    .filter(rule => rule.enabled)
-    .flatMap(rule => rule.sites)
-    .filter(site => site.actions.some(a => a.type === "BLOCK_PAGE"));
+    .filter((rule) => rule.enabled)
+    .flatMap((rule) => rule.sites)
+    .filter((site) => site.actions.some((a) => a.type === 'BLOCK_PAGE'));
 }
 
 async function refreshBlockedUrls() {
   await rulesStore.load();
   const rules = rulesStore.nonProxyRules;
 
-  const blockedUrls = getBlockedSites(rules).map(site => site.siteUrl);
+  const blockedUrls = getBlockedSites(rules).map((site) => site.siteUrl);
 
-  patterns = blockedUrls.map(u => new MatchPattern("*://" + u));
+  patterns = blockedUrls.map((u) => new MatchPattern('*://' + u));
 }
 
 function handleBlock(
-  details: Browser.webNavigation.WebNavigationParentedCallbackDetails |
-    Browser.webNavigation.WebNavigationTransitionCallbackDetails
+  details:
+    | Browser.webNavigation.WebNavigationParentedCallbackDetails
+    | Browser.webNavigation.WebNavigationTransitionCallbackDetails
 ) {
   if (details.frameId !== 0) return;
 
@@ -34,7 +39,7 @@ function handleBlock(
         console.log(`Opened in new tab: ${err}`);
       });
       browser.tabs.update(details.tabId, {
-        url: browser.runtime.getURL("/blocked.html")
+        url: browser.runtime.getURL('/blocked.html'),
       });
       break;
     }
@@ -44,9 +49,10 @@ function handleBlock(
 function generateUrlFilters(rules: Rule[]): Browser.events.UrlFilter[] {
   const blockedHosts = new Set<string>();
 
-  getBlockedSites(rules).forEach(site => {
+  getBlockedSites(rules).forEach((site) => {
     try {
-      const host = new URL(`https://` + site.siteUrl.replace("*.", "")).hostname;
+      const host = new URL(`https://` + site.siteUrl.replace('*.', ''))
+        .hostname;
       blockedHosts.add(host);
     } catch (e) {
       console.warn(`Could not parse host from pattern: ${site.siteUrl}`);
@@ -55,8 +61,8 @@ function generateUrlFilters(rules: Rule[]): Browser.events.UrlFilter[] {
 
   if (blockedHosts.size === 0) return [];
 
-  console.log("Generating URL filters for hosts:", Array.from(blockedHosts));
-  return Array.from(blockedHosts).map(host => ({ hostContains: host }));
+  console.log('Generating URL filters for hosts:', Array.from(blockedHosts));
+  return Array.from(blockedHosts).map((host) => ({ hostContains: host }));
 }
 
 async function updateOnHistoryStateUpdatedListener() {
@@ -81,24 +87,27 @@ async function updateBlockingRules() {
 export default defineBackground(() => {
   browser.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
 
-  onMessage("getCurrentSiteUrl", async () => {
-    const tabs = await browser.tabs.query({ active: true, currentWindow: true });
-    return tabs[0]?.url || "";
+  onMessage('getCurrentSiteUrl', async () => {
+    const tabs = await browser.tabs.query({
+      active: true,
+      currentWindow: true,
+    });
+    return tabs[0]?.url || '';
   });
 
-  onMessage("getHideRulesSelectors", async ({ data: { url } }) => {
+  onMessage('getHideRulesSelectors', async ({ data: { url } }) => {
     await rulesStore.load();
     const rules = rulesStore.nonProxyRules;
 
     const selectorsToHide: string[] = [];
 
     rules
-      .filter(rule => rule.enabled)
-      .flatMap(rule => rule.sites)
-      .filter(site => new MatchPattern("*://" + site.siteUrl).includes(url))
-      .flatMap(site => site.actions)
-      .forEach(action => {
-        if (action.type === "HIDE_ELEMENT") {
+      .filter((rule) => rule.enabled)
+      .flatMap((rule) => rule.sites)
+      .filter((site) => new MatchPattern('*://' + site.siteUrl).includes(url))
+      .flatMap((site) => site.actions)
+      .forEach((action) => {
+        if (action.type === 'HIDE_ELEMENT') {
           selectorsToHide.push(action.selector);
         }
       });
@@ -106,7 +115,7 @@ export default defineBackground(() => {
     return selectorsToHide;
   });
 
-  onMessage("getCurrentTabId", async () => {
+  onMessage('getCurrentTabId', async () => {
     const tabs = await browser.tabs.query({
       active: true,
       currentWindow: true,
@@ -114,12 +123,12 @@ export default defineBackground(() => {
     return tabs[0]?.id;
   });
 
-  onMessage("listenUrlChanges", async () => {
+  onMessage('listenUrlChanges', async () => {
     await updateBlockingRules();
   });
 
   browser.runtime.onInstalled.addListener(async (details) => {
-    if (details.reason === "install") {
+    if (details.reason === 'install') {
       await initPresetData();
     }
     await updateBlockingRules();

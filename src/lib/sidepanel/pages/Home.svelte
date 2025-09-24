@@ -1,10 +1,10 @@
 <script lang="ts">
-  import wxtLogo from "@/assets/wxt.svg";
-  import RuleItem from "@/lib/sidepanel/components/RuleItem.svelte";
-  import { Settings } from "@lucide/svelte";
-  import { router } from "@/lib/sidepanel/router.svelte";
-  import { rulesStore } from "@/lib/data/rules/store.svelte";
-  import { ruleFormStore } from "@/lib/sidepanel/ruleFormStore.svelte";
+  import wxtLogo from '@/assets/wxt.svg';
+  import RuleItem from '@/lib/sidepanel/components/RuleItem.svelte';
+  import { Settings } from '@lucide/svelte';
+  import { router } from '@/lib/sidepanel/router.svelte';
+  import { rulesStore } from '@/lib/data/rules/store.svelte';
+  import { ruleFormStore } from '@/lib/sidepanel/ruleFormStore.svelte';
 
   const loadPromise = rulesStore.load();
   const rules = $derived(rulesStore.rules);
@@ -12,15 +12,14 @@
   function navigateToRuleForm() {
     ruleFormStore.reset();
     router.push({
-      name: "ruleForm",
+      name: 'ruleForm',
       params: {},
     });
   }
 </script>
 
 <header
-  class="flex justify-between items-center py-2 px-3 border-b border-b-base-100"
->
+  class="border-b-base-100 flex items-center justify-between border-b px-3 py-2">
   <div class="flex items-center gap-2">
     <img src={wxtLogo} alt="Terminate Distraction Logo" class="w-6" />
     <h1 class="text-lg font-bold">Terminate Distraction</h1>
@@ -32,8 +31,7 @@
 </header>
 
 <div
-  class="flex flex-col flex-1 items-center gap-2 p-2 min-h-0 overflow-y-auto topography-pattern scrollbar-hidden"
->
+  class="topography-pattern scrollbar-hidden flex min-h-0 flex-1 flex-col items-center gap-2 overflow-y-auto p-2">
   {#await loadPromise then}
     {#each rules as { id, name, enabled, option } (id)}
       <RuleItem
@@ -41,17 +39,15 @@
         {name}
         {enabled}
         dailyLimit={option.dailyLimit}
-        unlockCount={0}
-      />
+        unlockCount={0} />
     {/each}
   {/await}
 </div>
 
-<div class="flex justify-center items-center p-2 border-t border-t-base-100">
+<div class="border-t-base-100 flex items-center justify-center border-t p-2">
   <button
     class="btn btn-sm btn-soft btn-primary btn-wide rounded-full"
-    onclick={navigateToRuleForm}
-  >
+    onclick={navigateToRuleForm}>
     <span class="text-primary-content">Add New Rule</span>
   </button>
 </div>

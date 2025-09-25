@@ -7,6 +7,7 @@
   import { slide } from 'svelte/transition';
   import { sendMessage } from '@/lib/messaging';
   import { normalizeUrl, removeProtocol } from '@/lib/helpers/url';
+  import QuestionMarkInfo from '../components/QuestionMarkInfo.svelte';
 
   interface Props {
     id?: string | null;
@@ -35,7 +36,7 @@
 
   let isRuleNameEmpty = $state(false);
 
-  let isAdditionalOptionsOpen = $state(true);
+  let isAdditionalOptionsOpen = $state(false);
   const advancedOptionChevronClass = $derived(
     isAdditionalOptionsOpen ? '' : '-rotate-180'
   );
@@ -218,9 +219,10 @@
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-1">
             <span>Daily limit</span>
-            <CircleQuestionMark
-              size={12}
-              class="hover:text-primary cursor-pointer text-gray-600 transition" />
+            <QuestionMarkInfo>
+              <h1 class="text-lg">TODO</h1>
+              <span>No functionalities yet... Sorry!</span>
+            </QuestionMarkInfo>
           </div>
           <div class="mr-2 flex items-center">
             <input
@@ -235,9 +237,10 @@
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-1">
             <span>Unlock Duration</span>
-            <CircleQuestionMark
-              size={12}
-              class="hover:text-primary cursor-pointer text-gray-600 transition" />
+            <QuestionMarkInfo>
+              <h1 class="text-lg">TODO</h1>
+              <span>No functionalities yet... Sorry!</span>
+            </QuestionMarkInfo>
           </div>
           <div class="mr-2 flex items-center">
             <input
@@ -254,9 +257,10 @@
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-1">
             <span>Cooldown between unlock</span>
-            <CircleQuestionMark
-              size={12}
-              class="hover:text-primary cursor-pointer text-gray-600 transition" />
+            <QuestionMarkInfo>
+              <h1 class="text-lg">TODO</h1>
+              <span>No functionalities yet... Sorry!</span>
+            </QuestionMarkInfo>
           </div>
           <div class="mr-2 flex items-center">
             <input
@@ -271,9 +275,10 @@
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-1">
             <span>Pause before unlock</span>
-            <CircleQuestionMark
-              size={12}
-              class="hover:text-primary cursor-pointer text-gray-600 transition" />
+            <QuestionMarkInfo>
+              <h1 class="text-lg">TODO</h1>
+              <span>No functionalities yet... Sorry!</span>
+            </QuestionMarkInfo>
           </div>
           <div class="mr-2 flex items-center">
             <input
@@ -290,9 +295,10 @@
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-1">
             <span>Increase pause time per unlock</span>
-            <CircleQuestionMark
-              size={12}
-              class="hover:text-primary cursor-pointer text-gray-600 transition" />
+            <QuestionMarkInfo>
+              <h1 class="text-lg">TODO</h1>
+              <span>No functionalities yet... Sorry!</span>
+            </QuestionMarkInfo>
           </div>
           <div class="mr-2 flex items-center">
             <input
@@ -313,9 +319,20 @@
     class="bg-base-100 flex w-full max-w-lg flex-col gap-2 rounded-lg p-3 shadow">
     <span class="flex items-center gap-2">
       <h1 class="text-lg">Sites</h1>
-      <CircleQuestionMark
-        size={12}
-        class="hover:text-primary cursor-pointer text-gray-600 transition" />
+      <QuestionMarkInfo>
+        <div class="h-48">
+          <img
+            class="h-full w-full object-contain"
+            src="https://projectwingman.wiki.gg/images/thumb/Federation.png/600px-Federation.png"
+            alt="Guide about URL pattern" />
+        </div>
+        <div class="mt-2">
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Ducimus
+          deserunt harum error vero itaque maxime maiores, beatae neque ab
+          doloribus perspiciatis perferendis quo necessitatibus laudantium ullam
+          asperiores modi eos qui!
+        </div>
+      </QuestionMarkInfo>
     </span>
 
     <div class="flex flex-col">

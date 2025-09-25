@@ -1,7 +1,6 @@
 <script lang="ts">
   import {
     ArrowLeft,
-    CircleQuestionMark,
     MousePointerClick,
     Pencil,
     PencilOff,
@@ -13,6 +12,7 @@
   import { slide } from 'svelte/transition';
   import { onMessage, sendMessage } from '@/lib/messaging';
   import { normalizeUrl, removeProtocol } from '@/lib/helpers/url';
+  import QuestionMarkInfo from '@/lib/sidepanel/components/QuestionMarkInfo.svelte';
 
   interface Props {
     id: string;
@@ -229,9 +229,20 @@
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-1">
           <span>Block Site</span>
-          <CircleQuestionMark
-            size={12}
-            class="hover:text-primary cursor-pointer text-gray-600 transition" />
+          <QuestionMarkInfo>
+            <div class="h-48">
+              <img
+                class="h-full w-full object-contain"
+                src="https://projectwingman.wiki.gg/images/thumb/Federation.png/600px-Federation.png"
+                alt="Guide about URL pattern" />
+            </div>
+            <div class="mt-2">
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Ducimus
+              deserunt harum error vero itaque maxime maiores, beatae neque ab
+              doloribus perspiciatis perferendis quo necessitatibus laudantium
+              ullam asperiores modi eos qui!
+            </div>
+          </QuestionMarkInfo>
         </div>
         <input
           type="checkbox"
@@ -252,102 +263,118 @@
     </div>
   </div>
 
-  <div
-    class="bg-base-100 flex w-full max-w-lg flex-col gap-2 rounded-lg p-3 shadow">
-    <span class="flex items-center gap-2">
-      <h1 class="text-lg">Hide Element</h1>
-      <CircleQuestionMark
-        size={12}
-        class="hover:text-primary cursor-pointer text-gray-600 transition" />
-    </span>
-
-    <div class="flex flex-col gap-2">
-      <div class="flex flex-col gap-1">
-        <span>Label</span>
-        <input
-          type="text"
-          class="input input-sm {trackErrorInputs.label ? 'input-error' : ''}"
-          oninput={() => {
-            trackErrorInputs.label = false;
-          }}
-          bind:value={hideElementInput.label} />
-        {#if trackErrorInputs.label}
-          <span class="text-error text-xs" transition:slide>
-            This field cannot be left empty
-          </span>
-        {/if}
-      </div>
-      <div class="flex flex-col gap-1">
-        <span>Selector</span>
-        <textarea
-          class="textarea textarea-xs min-h-16 font-mono {trackErrorInputs.selector
-            ? 'textarea-error'
-            : ''}"
-          oninput={() => {
-            trackErrorInputs.selector = false;
-          }}
-          bind:value={hideElementInput.selector}></textarea>
-        {#if trackErrorInputs.selector}
-          <span class="text-error text-xs" transition:slide>
-            This field cannot be left empty
-          </span>
-        {/if}
-      </div>
-      <div class="flex gap-2">
-        <button
-          class="btn btn-primary btn-soft btn-sm flex-1 rounded-lg"
-          title="Add element into the 'Hide Element' list"
-          onclick={handleSaveAction}>
-          {hideElementInput.id ? 'Update' : 'Add'}
-        </button>
-        <button
-          class="btn btn-secondary {isSelectorMode
-            ? ''
-            : 'btn-soft'} btn-sm rounded-lg"
-          title="Select an element from the current website"
-          onclick={toggleSelectorMode}>
-          <MousePointerClick size={20} />
-        </button>
-      </div>
-    </div>
-
-    <div class="bg-base-200 mt-2 flex flex-col rounded p-2 text-sm">
-      {#each site.actions as action}
-        {#if action.type === 'HIDE_ELEMENT'}
-          <div
-            class="group hover:bg-base-100 flex cursor-default items-center justify-between gap-2 rounded p-2">
-            <span class="flex-1 break-all">
-              {action.label}
-            </span>
-            {#if hideElementInput.id === action.id}
-              <button
-                class="text-primary drop-shadow-primary cursor-pointer drop-shadow-lg"
-                title="Edit"
-                onclick={handleCancelEditAction}>
-                <PencilOff size={16} />
-              </button>
-            {:else}
-              <span
-                class="flex gap-2 opacity-0 transition-opacity group-hover:opacity-100">
-                <button
-                  class="hover:text-primary hover:drop-shadow-primary cursor-pointer hover:drop-shadow-lg"
-                  title="Cancel Edit"
-                  onclick={() => handleEditAction(action)}>
-                  <Pencil size={16} />
-                </button>
-                <button
-                  class="text-error hover:text-error hover:drop-shadow-error cursor-pointer hover:drop-shadow-lg"
-                  title="Delete"
-                  onclick={() => handleDeleteAction(action.id)}>
-                  <Trash size={16} />
-                </button>
-              </span>
-            {/if}
+  {#if !blockedToggle}
+    <div
+      class="bg-base-100 flex w-full max-w-lg flex-col gap-2 rounded-lg p-3 shadow"
+      transition:slide>
+      <span class="flex items-center gap-2">
+        <h1 class="text-lg">Hide Element</h1>
+        <QuestionMarkInfo>
+          <div class="h-48">
+            <img
+              class="h-full w-full object-contain"
+              src="https://projectwingman.wiki.gg/images/thumb/Federation.png/600px-Federation.png"
+              alt="Guide about URL pattern" />
           </div>
-        {/if}
-      {/each}
+          <div class="mt-2">
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Ducimus
+            deserunt harum error vero itaque maxime maiores, beatae neque ab
+            doloribus perspiciatis perferendis quo necessitatibus laudantium
+            ullam asperiores modi eos qui!
+          </div>
+        </QuestionMarkInfo>
+      </span>
+
+      <div class="flex flex-col gap-2">
+        <div class="flex flex-col gap-1">
+          <span>Label</span>
+          <input
+            type="text"
+            class="input input-sm {trackErrorInputs.label ? 'input-error' : ''}"
+            oninput={() => {
+              trackErrorInputs.label = false;
+            }}
+            bind:value={hideElementInput.label} />
+          {#if trackErrorInputs.label}
+            <span class="text-error text-xs" transition:slide>
+              This field cannot be left empty
+            </span>
+          {/if}
+        </div>
+        <div class="flex flex-col gap-1">
+          <span>Selector</span>
+          <textarea
+            class="textarea textarea-xs min-h-16 font-mono {trackErrorInputs.selector
+              ? 'textarea-error'
+              : ''}"
+            oninput={() => {
+              trackErrorInputs.selector = false;
+            }}
+            bind:value={hideElementInput.selector}></textarea>
+          {#if trackErrorInputs.selector}
+            <span class="text-error text-xs" transition:slide>
+              This field cannot be left empty
+            </span>
+          {/if}
+        </div>
+        <div class="flex gap-2">
+          <button
+            class="btn btn-primary btn-soft btn-sm flex-1 rounded-lg"
+            title="Add element into the 'Hide Element' list"
+            onclick={handleSaveAction}>
+            {hideElementInput.id ? 'Update' : 'Add'}
+          </button>
+          <button
+            class="btn btn-secondary {isSelectorMode
+              ? ''
+              : 'btn-soft'} btn-sm rounded-lg"
+            title="Select an element from the current website"
+            onclick={toggleSelectorMode}>
+            <MousePointerClick size={20} />
+          </button>
+        </div>
+      </div>
+
+      {#if site.actions.some((a) => a.type === 'HIDE_ELEMENT')}
+        <div class="bg-base-200 mt-2 flex flex-col rounded p-2 text-sm">
+          {#each site.actions as action}
+            {#if action.type === 'HIDE_ELEMENT'}
+              <div
+                class="group hover:bg-base-100 flex cursor-default items-center justify-between gap-2 rounded p-2">
+                <span class="flex-1 break-all">
+                  {action.label}
+                </span>
+                {#if hideElementInput.id === action.id}
+                  <button
+                    class="text-primary drop-shadow-primary cursor-pointer drop-shadow-lg"
+                    title="Edit"
+                    onclick={handleCancelEditAction}>
+                    <PencilOff size={16} />
+                  </button>
+                {:else}
+                  <span
+                    class="flex gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+                    <button
+                      class="hover:text-primary hover:drop-shadow-primary cursor-pointer hover:drop-shadow-lg"
+                      title="Cancel Edit"
+                      onclick={() => handleEditAction(action)}>
+                      <Pencil size={16} />
+                    </button>
+                    <button
+                      class="text-error hover:text-error hover:drop-shadow-error cursor-pointer hover:drop-shadow-lg"
+                      title="Delete"
+                      onclick={() => handleDeleteAction(action.id)}>
+                      <Trash size={16} />
+                    </button>
+                  </span>
+                {/if}
+              </div>
+            {/if}
+          {/each}
+        </div>
+      {/if}
     </div>
-  </div>
+  {/if}
 </div>
 
 <div class="border-t-base-100 flex items-center justify-center border-t p-2">

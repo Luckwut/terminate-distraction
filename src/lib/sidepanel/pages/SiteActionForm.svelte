@@ -230,17 +230,9 @@
         <div class="flex items-center gap-1">
           <span>Block Site</span>
           <QuestionMarkInfo>
-            <div class="h-48">
-              <img
-                class="h-full w-full object-contain"
-                src="https://projectwingman.wiki.gg/images/thumb/Federation.png/600px-Federation.png"
-                alt="Guide about URL pattern" />
-            </div>
             <div class="mt-2">
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Ducimus
-              deserunt harum error vero itaque maxime maiores, beatae neque ab
-              doloribus perspiciatis perferendis quo necessitatibus laudantium
-              ullam asperiores modi eos qui!
+              When the URL matches your pattern, the page will be replaced with
+              the extension's block screen.
             </div>
           </QuestionMarkInfo>
         </div>
@@ -270,17 +262,44 @@
       <span class="flex items-center gap-2">
         <h1 class="text-lg">Hide Element</h1>
         <QuestionMarkInfo>
-          <div class="h-48">
-            <img
-              class="h-full w-full object-contain"
-              src="https://projectwingman.wiki.gg/images/thumb/Federation.png/600px-Federation.png"
-              alt="Guide about URL pattern" />
-          </div>
+          <h1 class="text-lg">Hiding Element and Selectors</h1>
           <div class="mt-2">
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Ducimus
-            deserunt harum error vero itaque maxime maiores, beatae neque ab
-            doloribus perspiciatis perferendis quo necessitatibus laudantium
-            ullam asperiores modi eos qui!
+            <div class="space-y-4 text-sm">
+              <p>
+                Instead of blocking the site, you can hide specific elements on
+                the page.
+              </p>
+
+              <ul class="list-inside list-disc space-y-2">
+                <li>
+                  <span class="font-medium">Label:</span>
+                  A description of what you're hiding. Example: instead of a raw
+                  selector like
+                  <code class="rounded bg-base-content/25 px-1 py-0.5 text-xs">div#contents</code>, write “Hide homepage feed.”
+                </li>
+                <li>
+                  <span class="font-medium">Selector:</span>
+                  The CSS selector for the element. You can type it manually or use
+                  the interactive picker.
+                </li>
+                <li>
+                  <span class="font-medium">Interactive picker:</span>
+                  Hover over any element on the page and it will be outlined in
+                  <span class="font-semibold text-red-600">red</span>. Click it
+                  to automatically capture the selector — no need to open
+                  DevTools.
+                </li>
+              </ul>
+
+              <div
+                class="rounded border border-yellow-300 bg-yellow-50 p-3 text-sm text-yellow-900">
+                <span class="font-semibold">⚠️ Warning:</span>
+                Some sites use dynamically generated or unstable selectors. The interactive
+                picker may grab something too specific that breaks on reload. In
+                those cases, you'll need to write a more general selector manually
+                after inspecting the page in DevTools.
+              </div>
+            </div>
           </div>
         </QuestionMarkInfo>
       </span>

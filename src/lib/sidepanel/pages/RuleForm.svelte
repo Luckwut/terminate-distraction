@@ -320,17 +320,66 @@
     <span class="flex items-center gap-2">
       <h1 class="text-lg">Sites</h1>
       <QuestionMarkInfo>
-        <div class="h-48">
-          <img
-            class="h-full w-full object-contain"
-            src="https://projectwingman.wiki.gg/images/thumb/Federation.png/600px-Federation.png"
-            alt="Guide about URL pattern" />
-        </div>
+        <h1 class="text-lg">URL Pattern</h1>
         <div class="mt-2">
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Ducimus
-          deserunt harum error vero itaque maxime maiores, beatae neque ab
-          doloribus perspiciatis perferendis quo necessitatibus laudantium ullam
-          asperiores modi eos qui!
+          <div class="space-y-4 text-sm">
+            <h3 class="text-base font-semibold">Sites section</h3>
+            <p>This is where you define which URLs your rule applies to.</p>
+
+            <ul class="list-inside list-disc space-y-2">
+              <li>
+                You can type a URL pattern manually, grab the current site with
+                the
+                <span class="font-medium">“Get Current URL”</span>
+                button, then click
+                <span class="font-medium">Add</span>.
+              </li>
+              <li>
+                Patterns support wildcards
+                <code class="rounded bg-base-content/25 px-1 py-0.5 text-xs">*</code>.
+                Examples:
+                <ul class="ml-6 list-inside list-disc space-y-1">
+                  <li>
+                    <code class="rounded bg-base-content/25 px-1 py-0.5 text-xs"
+                      >*.reddit.com/r/*</code> → matches any subreddit on any Reddit
+                    subdomain.
+                  </li>
+                  <li>
+                    <code class="rounded bg-base-content/25 px-1 py-0.5 text-xs"
+                      >www.youtube.com/</code>
+                    → applies <span class="italic">only</span> to the YouTube homepage.
+                  </li>
+                  <li>
+                    <code class="rounded bg-base-content/25 px-1 py-0.5 text-xs"
+                      >www.youtube.com/*</code>
+                    → applies to all YouTube pages like <code>/watch</code>,
+                    <code>/results</code>, etc.
+                  </li>
+                </ul>
+              </li>
+              <li>
+                Query parameters aren't supported. Example:
+                <code class="rounded bg-base-content/25 px-1 py-0.5 text-xs"
+                  >www.youtube.com/watch?v=VIDEO_ID</code>
+                becomes
+                <code class="rounded bg-base-content/25 px-1 py-0.5 text-xs"
+                  >www.youtube.com/watch*</code
+                >, which matches the <code>/watch</code> path with any parameters.
+              </li>
+              <li>
+                The protocol (<code>https://</code>) is automatically removed.
+              </li>
+              <li>
+                Formatting is cleaned up. Example: typing
+                <code class="rounded bg-base-content/25 px-1 py-0.5 text-xs"
+                  >www.youtube.com</code>
+                turns into
+                <code class="rounded bg-base-content/25 px-1 py-0.5 text-xs"
+                  >www.youtube.com/</code
+                >.
+              </li>
+            </ul>
+          </div>
         </div>
       </QuestionMarkInfo>
     </span>
